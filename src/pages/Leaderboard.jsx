@@ -101,8 +101,8 @@ const Leaderboard = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Employee Leaderboard</h1>
-          <p className="mt-1 text-sm text-gray-500">
+          <h1 className="text-2xl font-bold text-onPrimary">Employee Leaderboard</h1>
+          <p className="mt-1 text-sm text-onPrimary">
             Rankings based on credit points earned from idea submissions
           </p>
         </div>
@@ -125,7 +125,7 @@ const Leaderboard = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 print:hidden">
+      <div className="bg-secondary-container rounded-lg shadow-sm border border-background p-4 print:hidden">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Search */}
           <div className="relative">
@@ -157,18 +157,20 @@ const Leaderboard = () => {
 
       {/* Top 3 Podium */}
       {employees.length >= 3 && (
-        <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8 print:bg-white print:border">
-          <h2 className="text-xl font-bold text-center text-gray-900 mb-8">Top Performers</h2>
+        // <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8 print:bg-white print:border">
+        <div>
+
+          <h2 className="text-xl text-primary font-bold text-center text-gray-900 mb-8 ">Top Performers</h2>
           <div className="flex justify-center items-end space-x-8">
             {/* Second Place */}
-            <div className="text-center">
-              <div className="w-20 h-24 bg-gradient-to-r from-gray-300 to-gray-500 rounded-lg flex items-center justify-center mb-4 shadow-lg">
+            <div className="text-center ">
+              <div className="w-20 h-24 bg-gradient-to-r from-primary to-tertiary rounded-lg flex items-center justify-center mb-4 shadow-lg">
                 <Medal className="h-10 w-10 text-white" />
               </div>
-              <div className="bg-white rounded-lg p-4 shadow-md min-w-[120px]">
-                <h3 className="font-semibold text-gray-900">{employees[1]?.name}</h3>
-                <p className="text-sm text-gray-500">{employees[1]?.department}</p>
-                <p className="text-lg font-bold text-blue-600 mt-2">
+              <div className="bg-secondary-container rounded-lg p-4 shadow-md min-w-[120px] text-center">
+                <h3 className="font-semibold text-tertiary ">{employees[1]?.name}</h3>
+                <p className="text-sm text-surfaceVariant">{employees[1]?.department}</p>
+                <p className="text-lg font-bold text-primary mt-2">
                   {employees[1]?.creditPoints} pts
                 </p>
               </div>
@@ -176,13 +178,13 @@ const Leaderboard = () => {
 
             {/* First Place */}
             <div className="text-center">
-              <div className="w-24 h-32 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-lg flex items-center justify-center mb-4 shadow-xl">
+              <div className="w-24 h-32 bg-gradient-to-r from-primary to-tertiary rounded-lg flex items-center justify-center mb-4 shadow-xl">
                 <Trophy className="h-12 w-12 text-white" />
               </div>
-              <div className="bg-white rounded-lg p-4 shadow-lg min-w-[120px] border-2 border-yellow-400">
-                <h3 className="font-bold text-gray-900">{employees[0]?.name}</h3>
-                <p className="text-sm text-gray-500">{employees[0]?.department}</p>
-                <p className="text-xl font-bold text-yellow-600 mt-2">
+              <div className="bg-secondary-container rounded-lg p-4 shadow-lg min-w-[120px] border-2 border-primary">
+                <h3 className="font-bold text-tertiary">{employees[0]?.name}</h3>
+                <p className="text-sm text-surfaceVariant">{employees[0]?.department}</p>
+                <p className="text-xl font-bold text-primary mt-2">
                   {employees[0]?.creditPoints} pts
                 </p>
               </div>
@@ -190,13 +192,13 @@ const Leaderboard = () => {
 
             {/* Third Place */}
             <div className="text-center">
-              <div className="w-20 h-20 bg-gradient-to-r from-amber-400 to-amber-600 rounded-lg flex items-center justify-center mb-4 shadow-lg">
+              <div className="w-20 h-20 bg-gradient-to-r from-primary to-tertiary rounded-lg flex items-center justify-center mb-4 shadow-lg">
                 <Award className="h-10 w-10 text-white" />
               </div>
-              <div className="bg-white rounded-lg p-4 shadow-md min-w-[120px]">
-                <h3 className="font-semibold text-gray-900">{employees[2]?.name}</h3>
-                <p className="text-sm text-gray-500">{employees[2]?.department}</p>
-                <p className="text-lg font-bold text-amber-600 mt-2">
+              <div className="bg-secondary-container rounded-lg p-4 shadow-md min-w-[120px]">
+                <h3 className="font-semibold text-tertiary">{employees[2]?.name}</h3>
+                <p className="text-sm text-surfaceVariant">{employees[2]?.department}</p>
+                <p className="text-lg font-bold text-primary mt-2">
                   {employees[2]?.creditPoints} pts
                 </p>
               </div>
@@ -206,14 +208,14 @@ const Leaderboard = () => {
       )}
 
       {/* Full Leaderboard Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-secondary-container rounded-lg shadow-sm border border-background overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Complete Rankings</h2>
+          <h2 className="text-lg font-semibold text-surface">Complete Rankings</h2>
         </div>
         
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full divide-y divide-gray-200 ">
+            <thead className="bg-secondaryContainer">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Rank
@@ -246,7 +248,7 @@ const Leaderboard = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-r from-primary to-tertiary rounded-full flex items-center justify-center">
                           <span className="text-white font-medium text-sm">
                             {employee.name.split(' ').map(n => n[0]).join('')}
                           </span>
@@ -262,7 +264,7 @@ const Leaderboard = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tertiary text-gray-800">
                         {employee.department}
                       </span>
                     </td>

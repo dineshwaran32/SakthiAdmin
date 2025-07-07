@@ -3,6 +3,7 @@ import Idea from '../models/Idea.js';
 import User from '../models/User.js';
 import Notification from '../models/Notification.js';
 import { authenticateToken, requireAdminOrReviewer } from '../middleware/auth.js';
+import exceljs from 'exceljs';
 
 const router = express.Router();
 
@@ -193,6 +194,97 @@ router.get('/stats/dashboard', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Get stats error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Export ideas as Excel
+router.get('/export/excel', authenticateToken, async (req, res) => {
+  try {
+    const {
+      status,
+      department,
+      priority,
+      search,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      limit = 1000
+    } = req.query;
+
+    const query = { isActive: true };
+    if (status && status !== 'all') query.status = status;
+    if (department && department !== 'all') query.department = department;
+    if (priority && priority !== 'all') query.priority = priority;
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { problem: { $regex: search, $options: 'i' } },
+        { submittedByName: { $regex: search, $options: 'i' } },
+        { submittedByEmployeeNumber: { $regex: search, $options: 'i' } }
+      ];
+    }
+    const sort = {};
+    sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
+    const ideas = await Idea.find(query)
+      .sort(sort)
+      .limit(Number(limit))
+      .lean();
+
+    // Collect all reviewedBy values that look like ObjectIds
+    const reviewerIds = ideas
+      .map(idea => idea.reviewedBy)
+      .filter(val => val && /^[0-9a-fA-F]{24}$/.test(val));
+    let reviewerMap = {};
+    if (reviewerIds.length > 0) {
+      const users = await User.find({ _id: { $in: reviewerIds } }).lean();
+      reviewerMap = Object.fromEntries(users.map(u => [u._id.toString(), u.name]));
+    }
+
+    // Collect all employee numbers that are missing names
+    const missingNames = ideas
+      .filter(idea => !idea.submittedByName && idea.submittedByEmployeeNumber)
+      .map(idea => idea.submittedByEmployeeNumber);
+
+    let employeeMap = {};
+    if (missingNames.length > 0) {
+      const users = await User.find({ employeeNumber: { $in: missingNames } }).lean();
+      employeeMap = Object.fromEntries(users.map(u => [u.employeeNumber, u.name]));
+    }
+
+    const workbook = new exceljs.Workbook();
+    const worksheet = workbook.addWorksheet('Ideas');
+    worksheet.columns = [
+      { header: 'Title', key: 'title', width: 30 },
+      { header: 'Department', key: 'department', width: 20 },
+      { header: 'Employee ID', key: 'submittedByEmployeeNumber', width: 15 },
+      { header: 'Employee Name', key: 'submittedByName', width: 25 },
+      { header: 'Status', key: 'status', width: 15 },
+      { header: 'Priority', key: 'priority', width: 10 },
+      { header: 'Submitted Date', key: 'createdAt', width: 20 },
+      { header: 'Reviewed By', key: 'reviewedBy', width: 20 },
+      { header: 'Review Comments', key: 'reviewComments', width: 30 },
+      { header: 'Estimated Savings', key: 'estimatedSavings', width: 18 }
+    ];
+    ideas.forEach(idea => {
+      worksheet.addRow({
+        title: idea.title || '',
+        department: idea.department || '',
+        submittedByEmployeeNumber: idea.submittedByEmployeeNumber || '',
+        submittedByName: idea.submittedByName || employeeMap[idea.submittedByEmployeeNumber] || '',
+        status: idea.status || '',
+        priority: idea.priority || '',
+        createdAt: idea.createdAt ? new Date(idea.createdAt).toLocaleString() : '',
+        reviewedBy: reviewerMap[idea.reviewedBy] || idea.reviewedBy || '',
+        reviewComments: idea.reviewComments || '',
+        estimatedSavings: idea.estimatedSavings || '',
+      });
+    });
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=ideas.xlsx');
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Export ideas error:', error);
+    res.status(500).json({ message: 'Failed to export ideas' });
   }
 });
 

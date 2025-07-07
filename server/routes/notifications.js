@@ -101,7 +101,7 @@ router.get('/unread-count', authenticateToken, async (req, res) => {
       isActive: true
     });
 
-    res.json({ count });
+    res.json({ unreadCount: count });
   } catch (error) {
     console.error('Get unread count error:', error);
     res.status(500).json({ message: 'Server error' });

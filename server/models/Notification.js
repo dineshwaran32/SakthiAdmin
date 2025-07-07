@@ -9,7 +9,8 @@ const notificationSchema = new mongoose.Schema({
       'credit_points_updated',
       'new_reviewer_added',
       'idea_reviewed',
-      'system_update'
+      'system_update',
+      'employee_deleted'
     ],
     required: true
   },

@@ -5,9 +5,9 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
 import Layout from './components/Layout/Layout';
 import Login from './components/Auth/Login';
-import IdeasManagement from './pages/IdeasManagement';
 import Leaderboard from './pages/Leaderboard';
 import EmployeeManagement from './pages/EmployeeManagement';
+import AdminIdeasDashboard from './pages/AdminIdeasDashboard';
 
 // Set axios base URL
 axios.defaults.baseURL = 'http://localhost:5001';
@@ -57,7 +57,7 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout>
-                      <IdeasManagement />
+                      <AdminIdeasDashboard />
                     </Layout>
                   </ProtectedRoute>
                 }
@@ -88,6 +88,16 @@ function App() {
                   <AdminRoute>
                     <Layout>
                       <EmployeeManagement />
+                    </Layout>
+                  </AdminRoute>
+                }
+              />
+              <Route
+                path="/admin-ideas-dashboard"
+                element={
+                  <AdminRoute>
+                    <Layout>
+                      <AdminIdeasDashboard />
                     </Layout>
                   </AdminRoute>
                 }

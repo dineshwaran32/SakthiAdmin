@@ -39,6 +39,7 @@ const EmployeeManagement = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
 
   // Form states
@@ -47,7 +48,7 @@ const EmployeeManagement = () => {
     name: '',
     email: '',
     department: '',
-    phoneNumber: '',
+    mobileNumber: '',
     creditPoints: 0
   });
 
@@ -56,10 +57,18 @@ const EmployeeManagement = () => {
   const [importLoading, setImportLoading] = useState(false);
   const [importResults, setImportResults] = useState(null);
 
+  // Bulk delete states
+  const [bulkDeleteFile, setBulkDeleteFile] = useState(null);
+  const [bulkDeleteLoading, setBulkDeleteLoading] = useState(false);
+  const [bulkDeleteResults, setBulkDeleteResults] = useState(null);
+
   // Alert states
   const [alert, setAlert] = useState({ show: false, type: '', message: '' });
 
-  const { isAdmin } = useAuth();
+  // Add state for role filter
+  const [roleFilter, setRoleFilter] = useState('all');
+
+  const { isAdmin, user } = useAuth();
 
   useEffect(() => {
     fetchEmployees();
@@ -68,18 +77,8 @@ const EmployeeManagement = () => {
   const fetchEmployees = async () => {
     try {
       setLoading(true);
-      const params = new URLSearchParams();
-      params.append('page', pagination.currentPage);
-      params.append('limit', '20');
-      
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value && value !== 'all') {
-          params.append(key, value);
-        }
-      });
-
-      const response = await axios.get(`/api/employees?${params}`);
-      setEmployees(response.data.employees);
+      const response = await axios.get('/api/users');
+      setEmployees(response.data.users);
       setDepartments(response.data.departments);
       setPagination({
         currentPage: response.data.currentPage,
@@ -87,8 +86,8 @@ const EmployeeManagement = () => {
         total: response.data.total
       });
     } catch (error) {
-      console.error('Failed to fetch employees:', error);
-      showAlert('error', 'Failed to fetch employees');
+      console.error('Failed to fetch users:', error);
+      showAlert('error', 'Failed to fetch users');
     } finally {
       setLoading(false);
     }
@@ -105,7 +104,8 @@ const EmployeeManagement = () => {
       name: '',
       email: '',
       department: '',
-      phoneNumber: '',
+      designation: '',
+      mobileNumber: '',
       creditPoints: 0
     });
   };
@@ -126,7 +126,7 @@ const EmployeeManagement = () => {
   const handleEditEmployee = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.put(`/api/employees/${selectedEmployee._id}`, employeeForm);
+      const response = await axios.put(`/api/users/${selectedEmployee._id}`, employeeForm);
       setEmployees(prev => prev.map(emp => 
         emp._id === selectedEmployee._id ? response.data : emp
       ));
@@ -145,7 +145,7 @@ const EmployeeManagement = () => {
     }
 
     try {
-      await axios.delete(`/api/employees/${employee._id}`);
+      await axios.delete(`/api/users/${employee._id}`);
       setEmployees(prev => prev.filter(emp => emp._id !== employee._id));
       showAlert('success', 'Employee deleted successfully!');
     } catch (error) {
@@ -195,6 +195,7 @@ const EmployeeManagement = () => {
       setImportLoading(true);
       const formData = new FormData();
       formData.append('file', importFile);
+      console.log(formData);
 
       const response = await axios.post('/api/employees/bulk-import', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -219,6 +220,103 @@ const EmployeeManagement = () => {
     }
   };
 
+  const handleBulkDelete = async (e) => {
+    e.preventDefault();
+    if (!bulkDeleteFile) {
+      showAlert('error', 'Please select a file to upload');
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = [
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'application/vnd.ms-excel'
+    ];
+    if (!allowedTypes.includes(bulkDeleteFile.type)) {
+      showAlert('error', 'Please select a valid Excel file (.xlsx or .xls)');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (bulkDeleteFile.size > 5 * 1024 * 1024) {
+      showAlert('error', 'File size must be less than 5MB');
+      return;
+    }
+
+    try {
+      setBulkDeleteLoading(true);
+      setBulkDeleteResults(null); // Clear previous results
+      
+      const formData = new FormData();
+      formData.append('file', bulkDeleteFile);
+
+      const response = await axios.post('/api/employees/bulk-delete', formData, {
+        headers: { 
+          'Content-Type': 'multipart/form-data'
+        },
+        timeout: 30000 // 30 second timeout
+      });
+
+      setBulkDeleteResults({
+        success: true,
+        message: response.data.message,
+        successes: response.data.successes || [],
+        notFound: response.data.notFound || [],
+        errors: response.data.errors || []
+      });
+      
+      // Refresh the employee list
+      await fetchEmployees();
+      
+      // Show success alert
+      showAlert('success', response.data.message);
+      
+      // Clear the file input
+      setBulkDeleteFile(null);
+      
+    } catch (error) {
+      console.error('Bulk delete error:', error);
+      
+      let errorMessage = 'Bulk delete failed';
+      if (error.response) {
+        errorMessage = error.response.data?.message || errorMessage;
+      } else if (error.request) {
+        errorMessage = 'Network error. Please check your connection.';
+      } else {
+        errorMessage = error.message || errorMessage;
+      }
+      
+      setBulkDeleteResults({
+        success: false,
+        message: errorMessage,
+        errors: [errorMessage]
+      });
+      
+      showAlert('error', errorMessage);
+    } finally {
+      setBulkDeleteLoading(false);
+    }
+  };
+
+  const handleDownloadTemplate = async () => {
+    try {
+      const response = await axios.get('/api/employees/bulk-delete-template', {
+        responseType: 'blob'
+      });
+      
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'bulk-delete-template.xlsx');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      showAlert('success', 'Bulk delete template downloaded successfully!');
+    } catch (error) {
+      showAlert('error', 'Failed to download template');
+    }
+  };
+
   const openEditModal = (employee) => {
     setSelectedEmployee(employee);
     setEmployeeForm({
@@ -226,8 +324,9 @@ const EmployeeManagement = () => {
       name: employee.name,
       email: employee.email,
       department: employee.department,
-      phoneNumber: employee.phoneNumber || '',
-      creditPoints: employee.creditPoints
+      mobileNumber: employee.mobileNumber || '',
+      creditPoints: employee.creditPoints,
+      designation: employee.designation || ''
     });
     setShowEditModal(true);
   };
@@ -240,7 +339,10 @@ const EmployeeManagement = () => {
     });
   };
 
-  if (!isAdmin()) {
+  // Filter employees by role before rendering the table
+  const displayedEmployees = roleFilter === 'all' ? employees : employees.filter(emp => emp.role === roleFilter);
+
+  if (!isAdmin) {
     return (
       <div className="text-center py-12">
         <AlertCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
@@ -279,10 +381,8 @@ const EmployeeManagement = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Employee Management</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Manage employee records, credit points, and bulk operations
-          </p>
+          <h1 className="text-2xl font-bold text-onPrimary">Employee Management</h1>
+          <p className="mt-1 text-sm text-onPrimary">Manage employee data</p>
         </div>
         <div className="mt-4 sm:mt-0 flex flex-wrap gap-3">
           <button
@@ -293,6 +393,13 @@ const EmployeeManagement = () => {
             Import Excel
           </button>
           <button
+            onClick={() => setShowBulkDeleteModal(true)}
+            className="inline-flex items-center px-4 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-white hover:bg-red-50 transition-colors"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Bulk Delete
+          </button>
+          <button
             onClick={handleExport}
             className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
           >
@@ -301,7 +408,7 @@ const EmployeeManagement = () => {
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg"
+            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-400 to-orange-600 text-white rounded-lg text-sm font-medium hover:from-orange-500 hover:to-orange-700 transition-all shadow-lg"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Employee
@@ -311,7 +418,7 @@ const EmployeeManagement = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-secondaryContainer rounded-lg shadow-sm border border-background p-6">
           <div className="flex items-center">
             <div className="p-2 bg-blue-100 rounded-lg">
               <Users className="h-6 w-6 text-blue-600" />
@@ -323,7 +430,7 @@ const EmployeeManagement = () => {
           </div>
         </div>
         
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-secondaryContainer rounded-lg shadow-sm border border-background p-6">
           <div className="flex items-center">
             <div className="p-2 bg-green-100 rounded-lg">
               <Award className="h-6 w-6 text-green-600" />
@@ -335,7 +442,7 @@ const EmployeeManagement = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-secondaryContainer rounded-lg shadow-sm border border-background p-6">
           <div className="flex items-center">
             <div className="p-2 bg-purple-100 rounded-lg">
               <FileText className="h-6 w-6 text-purple-600" />
@@ -347,7 +454,7 @@ const EmployeeManagement = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-secondaryContainer rounded-lg shadow-sm border border-background p-6">
           <div className="flex items-center">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <RefreshCw className="h-6 w-6 text-yellow-600" />
@@ -361,7 +468,7 @@ const EmployeeManagement = () => {
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <div className="bg-secondary-container rounded-lg shadow-sm border border-background p-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Search */}
           <div className="relative">
@@ -408,12 +515,26 @@ const EmployeeManagement = () => {
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>
           </select>
+
+          {/* Role Filter */}
+          <div className="relative">
+            <select
+              value={roleFilter}
+              onChange={e => setRoleFilter(e.target.value)}
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">All Roles</option>
+              <option value="admin">Admin</option>
+              <option value="reviewer">Reviewer</option>
+              <option value="employee">Employee</option>
+            </select>
+          </div>
         </div>
       </div>
 
       {/* Employee Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
+      <div className="bg-secondaryContainer rounded-lg shadow-sm border border-background overflow-hidden">
+        <div className="px-6 py-4 border-b border-background">
           <h2 className="text-lg font-semibold text-gray-900">Employee Directory</h2>
         </div>
 
@@ -424,7 +545,7 @@ const EmployeeManagement = () => {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+            <table className="min-w-full divide-y divide-background">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -440,68 +561,65 @@ const EmployeeManagement = () => {
                     Credit Points
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Joined
+                    Designation
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {employees.map((employee) => (
-                  <tr key={employee._id} className="hover:bg-gray-50">
+              <tbody className="bg-secondary-container divide-y divide-background">
+                {displayedEmployees.map((employee) => (
+                  <tr key={employee._id} className="hover:bg-secondary hover:text-surface group">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                        <div className="w-10 h-10 bg-gradient-to-r from-primary to-tertiary rounded-full flex items-center justify-center group-hover:text-primary group-hover:bg-gradient-to-r group-hover:from-surface group-hover:to-background ">
                           <span className="text-white font-medium text-sm">
                             {employee.name.split(' ').map(n => n[0]).join('')}
                           </span>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-medium text-gray-900 group-hover:text-surface">
                             {employee.name}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-sm text-gray-500 group-hover:text-surface">
                             #{employee.employeeNumber}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {employee.department}
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 group-hover:bg-tertiary">
+                        <p className="text-sm text-gray-500 group-hover:text-surface">{employee.department}</p>
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{employee.email}</div>
-                      {employee.phoneNumber && (
-                        <div className="text-sm text-gray-500">{employee.phoneNumber}</div>
-                      )}
+                      <div className="text-sm text-gray-900 group-hover:text-surface">{employee.mobileNumber || employee.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <Award className="h-4 w-4 text-yellow-500 mr-1" />
-                        <span className="text-lg font-bold text-gray-900">
+                        <Award className="h-4 w-4 text-yellow-500 mr-1 group-hover:text-surface" />
+                        <span className="text-lg font-bold text-yellow-600 group-hover:text-surface mt-2">
                           {employee.creditPoints}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(employee.createdAt)}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 group-hover:text-surface">
+                      {employee.designation}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <button
                           onClick={() => openEditModal(employee)}
-                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
+                          className="text-surface group-hover:text-surface p-1 rounded hover:bg-tertiary"
                         >
-                          <Edit className="h-4 w-4" />
+                          <Edit className="h-4 w-4 text-secondary group-hover:text-surface" />
                         </button>
                         <button
                           onClick={() => handleDeleteEmployee(employee)}
-                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
+                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-tertiary"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4 text-red-600 group-hover:text-surface" />
                         </button>
                       </div>
                     </td>
@@ -514,7 +632,7 @@ const EmployeeManagement = () => {
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
-          <div className="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+          <div className="bg-secondary-container px-4 py-3 border-t border-background sm:px-6">
             <div className="flex items-center justify-between">
               <div className="flex-1 flex justify-between sm:hidden">
                 <button
@@ -572,7 +690,7 @@ const EmployeeManagement = () => {
           <p className="text-gray-500 mb-4">Get started by adding your first employee.</p>
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-400 to-orange-600 text-white rounded-lg hover:from-orange-500 hover:to-orange-700"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Employee
@@ -654,12 +772,27 @@ const EmployeeManagement = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
+                    Designation *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={employeeForm.designation}
+                    onChange={(e) => setEmployeeForm(prev => ({ ...prev, designation: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter designation"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number *
                   </label>
                   <input
                     type="tel"
-                    value={employeeForm.phoneNumber}
-                    onChange={(e) => setEmployeeForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                    required
+                    value={employeeForm.mobileNumber}
+                    onChange={(e) => setEmployeeForm(prev => ({ ...prev, mobileNumber: e.target.value }))}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter phone number"
                   />
@@ -771,12 +904,26 @@ const EmployeeManagement = () => {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
+                    Designation *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={employeeForm.designation}
+                    onChange={(e) => setEmployeeForm(prev => ({ ...prev, designation: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number *
                   </label>
                   <input
                     type="tel"
-                    value={employeeForm.phoneNumber}
-                    onChange={(e) => setEmployeeForm(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                    required
+                    value={employeeForm.mobileNumber}
+                    onChange={(e) => setEmployeeForm(prev => ({ ...prev, mobileNumber: e.target.value }))}
                     className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
@@ -843,7 +990,8 @@ const EmployeeManagement = () => {
                     <li>• Name (required)</li>
                     <li>• Email (required)</li>
                     <li>• Department (required)</li>
-                    <li>• Phone Number (optional)</li>
+                    <li>• Designation (required)</li>
+                    <li>• Phone Number (required)</li>
                     <li>• Credit Points (optional, default: 0)</li>
                   </ul>
                 </div>
@@ -909,6 +1057,157 @@ const EmployeeManagement = () => {
                         <>
                           <Upload className="h-4 w-4 mr-2" />
                           Import
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Delete Modal */}
+      {showBulkDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-lg w-full">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-red-900">Bulk Delete Employees</h2>
+                <button
+                  onClick={() => {
+                    setShowBulkDeleteModal(false);
+                    setBulkDeleteFile(null);
+                    setBulkDeleteResults(null);
+                    setBulkDeleteLoading(false);
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h4 className="text-sm font-medium text-red-900 mb-2">⚠️ Warning: This action cannot be undone!</h4>
+                  <p className="text-xs text-red-800 mb-2">This will permanently delete the selected employees from the system.</p>
+                  <h4 className="text-sm font-medium text-red-900 mb-2">Excel Format Requirements</h4>
+                  <ul className="text-xs text-red-800 space-y-1">
+                    <li>• <b>Employee Number</b> (required, must match exactly)</li>
+                    <li>• The file should contain only one column: <b>Employee Number</b></li>
+                    <li>• Each row should contain one employee number to delete</li>
+                  </ul>
+                </div>
+
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={handleDownloadTemplate}
+                    className="inline-flex items-center px-4 py-2 border border-blue-300 rounded-lg text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download Template
+                  </button>
+                </div>
+
+                <form onSubmit={handleBulkDelete}>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Select Excel File with Employee IDs
+                    </label>
+                    <input
+                      type="file"
+                      accept=".xlsx,.xls"
+                      onChange={(e) => setBulkDeleteFile(e.target.files[0])}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      required
+                    />
+                  </div>
+
+                  {bulkDeleteResults && (
+                    <div className={`mt-4 p-4 rounded-lg border ${
+                      bulkDeleteResults.success 
+                        ? 'bg-green-50 border-green-200' 
+                        : 'bg-red-50 border-red-200'
+                    }`}>
+                      <p className={`text-sm font-medium ${
+                        bulkDeleteResults.success ? 'text-green-800' : 'text-red-800'
+                      }`}>
+                        {bulkDeleteResults.message}
+                      </p>
+                      
+                      {bulkDeleteResults.successes && bulkDeleteResults.successes.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs font-medium text-green-700 mb-1">Successfully deleted:</p>
+                          <ul className="text-xs text-green-700 space-y-1 max-h-20 overflow-y-auto">
+                            {bulkDeleteResults.successes.slice(0, 5).map((success, index) => (
+                              <li key={index}>• {success}</li>
+                            ))}
+                            {bulkDeleteResults.successes.length > 5 && (
+                              <li>... and {bulkDeleteResults.successes.length - 5} more</li>
+                            )}
+                          </ul>
+                        </div>
+                      )}
+
+                      {bulkDeleteResults.notFound && bulkDeleteResults.notFound.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs font-medium text-yellow-700 mb-1">Not found:</p>
+                          <ul className="text-xs text-yellow-700 space-y-1 max-h-20 overflow-y-auto">
+                            {bulkDeleteResults.notFound.slice(0, 5).map((notFound, index) => (
+                              <li key={index}>• {notFound}</li>
+                            ))}
+                            {bulkDeleteResults.notFound.length > 5 && (
+                              <li>... and {bulkDeleteResults.notFound.length - 5} more</li>
+                            )}
+                          </ul>
+                        </div>
+                      )}
+
+                      {bulkDeleteResults.errors && bulkDeleteResults.errors.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-xs font-medium text-red-700 mb-1">Errors:</p>
+                          <ul className="text-xs text-red-700 space-y-1 max-h-20 overflow-y-auto">
+                            {bulkDeleteResults.errors.slice(0, 5).map((error, index) => (
+                              <li key={index}>• {error}</li>
+                            ))}
+                            {bulkDeleteResults.errors.length > 5 && (
+                              <li>... and {bulkDeleteResults.errors.length - 5} more</li>
+                            )}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex justify-end space-x-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowBulkDeleteModal(false);
+                        setBulkDeleteFile(null);
+                        setBulkDeleteResults(null);
+                        setBulkDeleteLoading(false);
+                      }}
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={!bulkDeleteFile || bulkDeleteLoading}
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 flex items-center disabled:opacity-50"
+                    >
+                      {bulkDeleteLoading ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Deleting...
+                        </>
+                      ) : (
+                        <>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete Employees
                         </>
                       )}
                     </button>

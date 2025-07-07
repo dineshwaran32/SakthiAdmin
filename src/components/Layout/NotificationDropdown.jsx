@@ -25,11 +25,11 @@ const NotificationDropdown = ({ onClose }) => {
 
   const getPriorityColor = (priority) => {
     switch (priority) {
-      case 'urgent': return 'text-red-600 bg-red-50';
-      case 'high': return 'text-orange-600 bg-orange-50';
-      case 'medium': return 'text-blue-600 bg-blue-50';
-      case 'low': return 'text-gray-600 bg-gray-50';
-      default: return 'text-gray-600 bg-gray-50';
+      case 'urgent': return 'text-error bg-secondary-container';
+      case 'high': return 'text-primary bg-primary-container';
+      case 'medium': return 'text-tertiary bg-primary-container';
+      case 'low': return 'text-onSurfaceVariant bg-surfaceVariant';
+      default: return 'text-onSurfaceVariant bg-surfaceVariant';
     }
   };
 
@@ -66,16 +66,16 @@ const NotificationDropdown = ({ onClose }) => {
   return (
     <div 
       ref={dropdownRef}
-      className="absolute right-0 mt-2 w-96 bg-white rounded-lg shadow-xl border border-gray-200 z-50 max-h-96 overflow-hidden"
+      className="absolute right-0 mt-2 w-96 bg-background rounded-lg shadow-xl border border-background z-50 max-h-96 overflow-hidden"
     >
       {/* Header */}
-      <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+      <div className="px-4 py-3 border-b border-background bg-background">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-gray-900">Notifications</h3>
+          <h3 className="text-sm font-medium text-onPrimary">Notifications</h3>
           {notifications.length > 0 && (
             <button
               onClick={markAllAsRead}
-              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+              className="text-xs text-primary font-medium"
             >
               Mark all read
             </button>
@@ -87,13 +87,13 @@ const NotificationDropdown = ({ onClose }) => {
       <div className="max-h-80 overflow-y-auto">
         {loading ? (
           <div className="p-4 text-center">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-sm text-gray-500 mt-2">Loading notifications...</p>
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+            <p className="text-sm text-onPrimary mt-2">Loading notifications...</p>
           </div>
         ) : notifications.length === 0 ? (
           <div className="p-6 text-center">
-            <Bell className="h-8 w-8 text-gray-300 mx-auto mb-2" />
-            <p className="text-sm text-gray-500">No notifications yet</p>
+            <Bell className="h-8 w-8 text-onPrimary mx-auto mb-2" />
+            <p className="text-sm text-onPrimary">No notifications yet</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-100">
@@ -101,9 +101,7 @@ const NotificationDropdown = ({ onClose }) => {
               <div
                 key={notification._id}
                 onClick={() => handleNotificationClick(notification)}
-                className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
-                  !notification.isRead ? 'bg-blue-50 border-l-4 border-blue-500' : ''
-                }`}
+                className={`p-4 hover:bg-primary cursor-pointer transition-colors bg-background text-onPrimary ${!notification.isRead ? 'border-l-4 border-primary' : ''}`}
               >
                 <div className="flex items-start space-x-3">
                   <div className={`p-2 rounded-full ${getPriorityColor(notification.priority)}`}>
@@ -113,19 +111,19 @@ const NotificationDropdown = ({ onClose }) => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <p className={`text-sm font-medium ${
-                        !notification.isRead ? 'text-gray-900' : 'text-gray-700'
+                        !notification.isRead ? 'text-onPrimary' : 'text-onPrimary'
                       }`}>
                         {notification.title}
                       </p>
                       <div className="flex items-center space-x-1">
-                        <Clock className="h-3 w-3 text-gray-400" />
-                        <span className="text-xs text-gray-500">
+                        <Clock className="h-3 w-3 text-primary" />
+                        <span className="text-xs text-primary">
                           {formatTimeAgo(notification.createdAt)}
                         </span>
                       </div>
                     </div>
                     
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                    <p className="text-sm text-onPrimary mt-1 line-clamp-2">
                       {notification.message}
                     </p>
                     
@@ -137,7 +135,7 @@ const NotificationDropdown = ({ onClose }) => {
                       </span>
                       
                       {!notification.isRead && (
-                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <div className="w-2 h-2 bg-primary rounded-full"></div>
                       )}
                     </div>
                   </div>
@@ -150,10 +148,10 @@ const NotificationDropdown = ({ onClose }) => {
 
       {/* Footer */}
       {notifications.length > 10 && (
-        <div className="px-4 py-3 border-t border-gray-200 bg-gray-50">
+        <div className="px-4 py-3 border-t border-background bg-background">
           <button
             onClick={onClose}
-            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            className="text-sm text-primary font-medium"
           >
             View all notifications
           </button>

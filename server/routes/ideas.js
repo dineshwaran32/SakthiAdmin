@@ -22,8 +22,11 @@ router.get('/', authenticateToken, async (req, res) => {
     } = req.query;
     
     const query = { isActive: true };
-    
-    if (status && status !== 'all') {
+
+    // If the user is a reviewer, only show approved ideas
+    if (req.user.role === 'reviewer') {
+      query.status = 'approved';
+    } else if (status && status !== 'all') {
       query.status = status;
     }
     

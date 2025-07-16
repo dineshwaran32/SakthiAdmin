@@ -3,6 +3,7 @@ import { CheckCircle, Clock, AlertTriangle, RefreshCw, FileText, Award, Users, X
 import axios from 'axios';
 import { format } from 'date-fns';
 import { Listbox } from '@headlessui/react';
+import { useAuth } from '../context/AuthContext';
 
 const statusCards = [
   {
@@ -20,6 +21,14 @@ const statusCards = [
     color: 'bg-yellow-100 text-yellow-600',
     status: 'under_review',
     emptyText: 'under review',
+  },
+  {
+    key: 'ongoing',
+    label: 'Ongoing',
+    icon: RefreshCw,
+    color: 'bg-blue-100 text-blue-600',
+    status: 'ongoing',
+    emptyText: 'ongoing',
   },
   {
     key: 'approved',
@@ -63,6 +72,7 @@ const priorityOptions = [
 ];
 
 const AdminIdeasDashboard = () => {
+  const { user, isAdmin, isReviewer } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -83,42 +93,52 @@ const AdminIdeasDashboard = () => {
   const [filterPriority, setFilterPriority] = useState('all');
   const [departments, setDepartments] = useState([]);
 
+  // Move fetchStats outside useEffect so it can be called after status update
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get('/api/ideas/stats/dashboard');
+      setStats(response.data);
+    } catch (err) {
+      setError('Failed to fetch idea statistics');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('/api/ideas/stats/dashboard');
-        setStats(response.data);
-      } catch (err) {
-        setError('Failed to fetch idea statistics');
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchStats();
   }, []);
 
-  useEffect(() => {
-    const fetchIdeas = async () => {
-      try {
-        setIdeasLoading(true);
-        let url = `/api/ideas?limit=50&sortBy=createdAt&sortOrder=desc`;
-        if (selectedStatus && selectedStatus !== 'all') url += `&status=${selectedStatus}`;
-        if (search) url += `&search=${encodeURIComponent(search)}`;
-        if (filterStatus && filterStatus !== 'all') url += `&status=${filterStatus}`;
-        if (filterDepartment && filterDepartment !== 'all') url += `&department=${filterDepartment}`;
-        if (filterPriority && filterPriority !== 'all') url += `&priority=${filterPriority}`;
-        const response = await axios.get(url);
-        setIdeas(response.data.ideas || []);
-        setDepartments(response.data.departments || []);
-      } catch (err) {
-        setIdeasError('Failed to fetch ideas list');
-      } finally {
-        setIdeasLoading(false);
+  // Move fetchIdeas outside useEffect so it can be called after status update
+  const fetchIdeas = async () => {
+    try {
+      setIdeasLoading(true);
+      let url = `/api/ideas?limit=50&sortBy=createdAt&sortOrder=desc`;
+      if (selectedStatus && selectedStatus !== 'all') url += `&status=${selectedStatus}`;
+      if (search) url += `&search=${encodeURIComponent(search)}`;
+      if (filterStatus && filterStatus !== 'all') url += `&status=${filterStatus}`;
+      if (
+        isAdmin ||
+        ((selectedStatus !== 'approved' && selectedStatus !== 'implemented') && (filterDepartment && filterDepartment !== 'all')) ||
+        ((selectedStatus === 'approved' || selectedStatus === 'implemented') && filterDepartment && filterDepartment !== 'all')
+      ) {
+        url += `&department=${filterDepartment}`;
       }
-    };
+      if (filterPriority && filterPriority !== 'all') url += `&priority=${filterPriority}`;
+      const response = await axios.get(url);
+      setIdeas(response.data.ideas || []);
+      setDepartments(response.data.departments || []);
+    } catch (err) {
+      setIdeasError('Failed to fetch ideas list');
+    } finally {
+      setIdeasLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchIdeas();
-  }, [selectedStatus, search, filterStatus, filterDepartment, filterPriority]);
+  }, [selectedStatus, search, filterStatus, filterDepartment, filterPriority, isAdmin]);
 
   const handleViewIdea = (idea) => {
     setSelectedIdea(idea);
@@ -155,15 +175,9 @@ const AdminIdeasDashboard = () => {
       });
       setShowModal(false);
       setSelectedIdea(null);
-      // Optionally refresh ideas list
-      setIdeasLoading(true);
-      let url = '/api/ideas?limit=50&sortBy=createdAt&sortOrder=desc';
-      if (selectedStatus && selectedStatus !== 'all') {
-        url += `&status=${selectedStatus}`;
-      }
-      const response = await axios.get(url);
-      setIdeas(response.data.ideas || []);
-      setIdeasLoading(false);
+      // Refresh ideas list and stats after update
+      fetchIdeas();
+      fetchStats();
     } catch (err) {
       alert('Failed to update idea status');
     }
@@ -190,12 +204,20 @@ const AdminIdeasDashboard = () => {
     }
   };
 
+  // Fetch reviewers on mount so we can display reviewer names in the table
+  useEffect(() => {
+    if (reviewers.length === 0) {
+      fetchReviewers();
+    }
+    // eslint-disable-next-line
+  }, []);
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-onPrimary">Ideas Dashboard</h1>
-          <p className="mt-1 text-sm text-onPrimary">Overview of idea submissions and statuses</p>
+          <h1 className="text-3xl font-bold text-onPrimary">Ideas Dashboard</h1>
+          <p className="mt-1 text-base text-onPrimary">Overview of idea submissions and statuses</p>
         </div>
       </div>
       {loading ? (
@@ -207,7 +229,7 @@ const AdminIdeasDashboard = () => {
         <div className="text-red-600 text-center">{error}</div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
             {statusCards.map(card => {
               const Icon = card.icon;
               let value = 0;
@@ -215,6 +237,9 @@ const AdminIdeasDashboard = () => {
                 if (card.key === 'rejected') {
                   const rejected = stats.statusDistribution?.find(s => s._id === 'rejected');
                   value = rejected ? rejected.count : 0;
+                } else if (card.key === 'ongoing') {
+                  const ongoing = stats.statusDistribution?.find(s => s._id === 'ongoing');
+                  value = ongoing ? ongoing.count : 0;
                 } else {
                   value = stats[card.key] || 0;
                 }
@@ -223,18 +248,17 @@ const AdminIdeasDashboard = () => {
               return (
                 <button
                   key={card.key}
-                  className={`bg-secondaryContainer rounded-lg shadow-sm border border-background p-6 focus:outline-none transition-all ${isActive ? 'ring-2 ring-primary' : ''}`}
+                  className={`bg-secondaryContainer rounded-lg shadow-sm border border-background p-3 focus:outline-none transition-all flex flex-col items-center ${isActive ? 'ring-2 ring-primary' : ''} hover:bg-primary hover:scale-105 transition-transform duration-200 hover:text-[#E6F5E4]`}
                   onClick={() => { setSelectedStatus(card.status); setSelectedEmptyText(card.emptyText); }}
+                  style={{ minWidth: 0 }}
                 >
-                  <div className="flex items-center">
-                    <div className={`p-2 rounded-lg ${card.color}`}>
-                      <Icon className="h-6 w-6" />
-                    </div>
-                    <div className="ml-4">
-                      <p className="text-sm font-medium text-gray-500">{card.label}</p>
-                      <p className="text-2xl font-bold text-gray-900">{value}</p>
+                  <div className="flex items-center justify-center">
+                    <div className={`p-1 rounded-lg ${card.color} group-hover:text-onPrimary`}>
+                      <Icon className="h-5 w-5" />
                     </div>
                   </div>
+                  <p className="text-sm font-medium text-gray-500 mt-1 text-center group-hover:text-[#E6F5E4]">{card.label}</p>
+                  <p className="text-2xl font-bold text-gray-900 text-center group-hover:text-[#E6F5E4]">{value}</p>
                 </button>
               );
             })}
@@ -251,25 +275,27 @@ const AdminIdeasDashboard = () => {
                   placeholder="Search ideas..."
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               {/* Department Filter */}
-              <select
-                value={filterDepartment}
-                onChange={e => setFilterDepartment(e.target.value)}
-                className="border border-background rounded-lg px-3 py-2 text-sm bg-background text-onPrimary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
-              >
-                <option value="all">All Departments</option>
-                {departments.map(dept => (
-                  <option key={dept} value={dept}>{dept}</option>
-                ))}
-              </select>
+              {(isAdmin || (isReviewer && (selectedStatus === 'approved' || selectedStatus === 'implemented'))) && (
+                <select
+                  value={filterDepartment}
+                  onChange={e => setFilterDepartment(e.target.value)}
+                  className="border border-background rounded-lg px-3 py-2 text-base bg-background text-onPrimary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                >
+                  <option value="all">All Departments</option>
+                  {departments.map(dept => (
+                    <option key={dept} value={dept}>{dept}</option>
+                  ))}
+                </select>
+              )}
               {/* Priority Filter */}
               <select
                 value={filterPriority}
                 onChange={e => setFilterPriority(e.target.value)}
-                className="border border-background rounded-lg px-3 py-2 text-sm bg-background text-onPrimary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                className="border border-background rounded-lg px-3 py-2 text-base bg-background text-onPrimary focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
               >
                 <option value="all">All Priorities</option>
                 {priorityOptions.map(priority => (
@@ -280,7 +306,7 @@ const AdminIdeasDashboard = () => {
               <div className="flex gap-2">
                 <button
                   onClick={handleExport}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-base font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                 >
                   <Download className="h-4 w-4 mr-2" />
                   Export Excel
@@ -299,7 +325,7 @@ const AdminIdeasDashboard = () => {
                       setIdeasLoading(false);
                     });
                   }}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-base font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Refresh
@@ -311,7 +337,7 @@ const AdminIdeasDashboard = () => {
           {/* Idea Directory Table */}
           <div className="bg-secondaryContainer rounded-lg shadow-sm border border-background overflow-hidden mt-8">
             <div className="px-6 py-4 border-b border-background">
-              <h2 className="text-lg font-semibold text-gray-900">Idea Directory</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Idea Directory</h2>
             </div>
             {ideasLoading ? (
               <div className="flex items-center justify-center h-32">
@@ -325,49 +351,65 @@ const AdminIdeasDashboard = () => {
                 <table className="min-w-full divide-y divide-background">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Idea</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Department</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Uploaded</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee ID</th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Idea</th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Department</th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Date Uploaded</th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Employee ID</th>
+                      <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">Assigned To</th>
                     </tr>
                   </thead>
                   <tbody className="bg-secondary-container divide-y divide-background">
-                    {ideas.map((idea) => (
-                      <tr key={idea._id} className="hover:bg-secondary hover:text-surface group cursor-pointer" onClick={() => handleViewIdea(idea)}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 bg-gradient-to-r from-primary to-tertiary rounded-full flex items-center justify-center group-hover:text-primary group-hover:bg-gradient-to-r group-hover:from-surface group-hover:to-background ">
-                              <span className="text-white font-medium text-sm">
-                                {idea.submittedByName ? idea.submittedByName.split(' ').map(n => n[0]).join('') : '?'}
-                              </span>
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900 group-hover:text-surface">
-                                {idea.title}
+                    {ideas.map((idea) => {
+                      // Find reviewer name by employeeNumber
+                      let assignedTo = '-';
+                      if (idea.assignedReviewer) {
+                        const reviewer = reviewers.find(r => r.employeeNumber === idea.assignedReviewer);
+                        assignedTo = reviewer ? reviewer.name : idea.assignedReviewer;
+                      }
+                      return (
+                        <tr key={idea._id} className="hover:bg-secondary hover:text-surface group cursor-pointer" onClick={() => handleViewIdea(idea)}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 bg-gradient-to-r from-primary to-tertiary rounded-full flex items-center justify-center group-hover:text-primary group-hover:bg-gradient-to-r group-hover:from-surface group-hover:to-background ">
+                                <span className="text-white font-medium text-base">
+                                  {idea.submittedByName ? idea.submittedByName.split(' ').map(n => n[0]).join('') : '?'}
+                                </span>
                               </div>
-                              <div className="text-sm text-gray-500 group-hover:text-surface">
-                                #{idea.submittedByEmployeeNumber}
+                              <div className="ml-4">
+                                <div className="text-base font-medium text-gray-900 group-hover:text-surface">
+                                  {idea.title}
+                                </div>
+                                <div className="text-base text-gray-500 group-hover:text-surface">
+                                  #{idea.submittedByEmployeeNumber}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 group-hover:bg-tertiary">
-                            <p className="text-sm text-gray-500 group-hover:text-surface">{idea.department}</p>
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 group-hover:text-surface">{idea.createdAt ? format(new Date(idea.createdAt), 'yyyy-MM-dd') : ''}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 group-hover:text-surface">{idea.submittedByEmployeeNumber}</div>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 group-hover:bg-tertiary">
+                              <p className="text-base text-gray-500 group-hover:text-surface">{idea.department}</p>
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-base text-gray-900 group-hover:text-surface">{idea.createdAt ? format(new Date(idea.createdAt), 'yyyy-MM-dd') : ''}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-base text-gray-900 group-hover:text-surface">{idea.submittedByEmployeeNumber}</div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-base text-gray-900 group-hover:text-surface">{assignedTo}</div>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
                 {ideas.length === 0 && (
-                  <div className="text-center text-gray-500 py-8">No ideas have been {selectedEmptyText} yet.</div>
+                  <div className="text-center text-gray-500 py-8">
+                    {(isReviewer && selectedStatus === 'under_review')
+                      ? 'No ideas are currently under review.'
+                      : `No ideas have been ${selectedEmptyText} yet.`}
+                  </div>
                 )}
               </div>
             )}
@@ -380,7 +422,7 @@ const AdminIdeasDashboard = () => {
                 <div className="p-6 ">
                   {/* Modal Header */}
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-primary">Idea Details</h2>
+                    <h2 className="text-2xl font-bold text-primary">Idea Details</h2>
                     <button
                       onClick={() => setShowModal(false)}
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -394,10 +436,10 @@ const AdminIdeasDashboard = () => {
                     {/* Left Column */}
                     <div className="space-y-4">
                       <div>
-                        <h3 className="text-lg font-semibold text-surface mb-2">
+                        <h3 className="text-xl font-semibold text-surface mb-2">
                           {selectedIdea.title}
                         </h3>
-                        <div className="flex items-center space-x-4 text-sm text-gray-100">
+                        <div className="flex items-center space-x-4 text-base text-gray-100">
                           <span>{selectedIdea.department}</span>
                           <span>•</span>
                           <span>{selectedIdea.createdAt ? format(new Date(selectedIdea.createdAt), 'yyyy-MM-dd') : ''}</span>
@@ -418,13 +460,32 @@ const AdminIdeasDashboard = () => {
                         <h4 className="font-semibold text-surface mb-2">Expected Benefit</h4>
                         <p className="text-gray-300">{selectedIdea.benefit}</p>
                       </div>
+                      {/* Images Section (below Expected Benefit) */}
+                      {selectedIdea.images && selectedIdea.images.length > 0 && (
+                        <div className="mt-4">
+                          <h4 className="font-semibold text-surface mb-2">Images</h4>
+                          <div className="flex flex-wrap gap-4">
+                            {selectedIdea.images.map((img, idx) => (
+                              <div key={idx} className="border rounded-lg p-2 bg-white shadow-sm">
+                                <img
+                                  src={`/uploads/${img.filename}`}
+                                  alt={img.originalName || `Idea Image ${idx + 1}`}
+                                  className="w-32 h-32 object-cover rounded mb-1"
+                                  style={{ maxWidth: '128px', maxHeight: '128px' }}
+                                />
+                                <div className="text-sm text-gray-600 truncate max-w-[120px]" title={img.originalName}>{img.originalName}</div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Right Column */}
                     <div className="space-y-4">
                       <div className="bg-gray-50 rounded-lg p-4">
                         <h4 className="font-semibold text-secondary mb-2">Submission Details</h4>
-                        <div className="space-y-2 text-sm">
+                        <div className="space-y-2 text-base">
                           <div className="flex justify-between">
                             <span className="text-gray-800">Submitted by</span>
                             <span className="font-medium">{selectedIdea.submittedByName}</span>
@@ -450,10 +511,10 @@ const AdminIdeasDashboard = () => {
 
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-semibold text-surface mb-2">Status</label>
+                          <label className="block text-base font-semibold text-surface mb-2">Status</label>
                           <Listbox value={statusUpdate.status} onChange={val => setStatusUpdate(prev => ({ ...prev, status: val }))}>
                             <div className="relative">
-                              <Listbox.Button className="w-full border border-background rounded-lg px-3 py-2 text-sm bg-background text-onPrimary focus:outline-primary focus:ring-2 focus:ring-primary focus:border-primary flex justify-between items-center">
+                              <Listbox.Button className="w-full border border-background rounded-lg px-3 py-2 text-base bg-background text-onPrimary focus:outline-primary focus:ring-2 focus:ring-primary focus:border-primary flex justify-between items-center">
                                 {statusOptions.find(opt => opt.value === statusUpdate.status)?.label || 'Select Status'}
                                 <span className="ml-2">▼</span>
                               </Listbox.Button>
@@ -475,10 +536,10 @@ const AdminIdeasDashboard = () => {
                         </div>
 
                         <div>
-                          <label className="block text-sm font-semibold text-surface mb-2">Priority</label>
+                          <label className="block text-base font-semibold text-surface mb-2">Priority</label>
                           <Listbox value={statusUpdate.priority} onChange={val => setStatusUpdate(prev => ({ ...prev, priority: val }))}>
                             <div className="relative">
-                              <Listbox.Button className="w-full border border-background rounded-lg px-3 py-2 text-sm bg-background text-onPrimary focus:outline-tertiary focus:ring-2 focus:ring-primary focus:border-primary flex justify-between items-center">
+                              <Listbox.Button className="w-full border border-background rounded-lg px-3 py-2 text-base bg-background text-onPrimary focus:outline-tertiary focus:ring-2 focus:ring-primary focus:border-primary flex justify-between items-center">
                                 {priorityOptions.find(opt => opt.value === statusUpdate.priority)?.label || 'Select Priority'}
                                 <span className="ml-2">▼</span>
                               </Listbox.Button>
@@ -499,39 +560,46 @@ const AdminIdeasDashboard = () => {
                           </Listbox>
                         </div>
 
-                        <div>
-                          <label className="block text-sm font-semibold text-surface mb-2">Reviewer</label>
-                          {reviewersLoading ? (
-                            <div className="text-gray-500 text-sm">Loading reviewers...</div>
-                          ) : reviewersError ? (
-                            <div className="text-red-500 text-sm">{reviewersError}</div>
-                          ) : (
-                            <Listbox value={statusUpdate.reviewedBy} onChange={val => setStatusUpdate(prev => ({ ...prev, reviewedBy: val }))}>
-                              <div className="relative">
-                                <Listbox.Button className="w-full border border-background rounded-lg px-3 py-2 text-sm bg-background text-onPrimary focus:outline-tertiary focus:ring-2 focus:ring-primary focus:border-primary flex justify-between items-center">
-                                  {reviewers.find(r => r.name === statusUpdate.reviewedBy)?.name || 'Select Reviewer'}
-                                  <span className="ml-2">▼</span>
-                                </Listbox.Button>
-                                <Listbox.Options className="absolute mt-1 w-full bg-secondaryContainer rounded-lg shadow-lg z-10">
-                                  {reviewers.map(reviewer => (
-                                    <Listbox.Option
-                                      key={reviewer._id}
-                                      value={reviewer.name}
-                                      className={({ active, selected }) =>
-                                        `cursor-pointer select-none px-4 py-2 text-black ${active || selected ? 'bg-primary text-surface' : ''}`
-                                      }
-                                    >
-                                      {reviewer.name} ({reviewer.role})
-                                    </Listbox.Option>
-                                  ))}
-                                </Listbox.Options>
-                              </div>
-                            </Listbox>
-                          )}
-                        </div>
+                        {/* Reviewer Assignment */}
+                        {isAdmin && (
+                          <div>
+                            <label className="block text-base font-semibold text-surface mb-2">Assign Reviewer</label>
+                            {reviewersLoading ? (
+                              <div className="text-gray-500 text-base">Loading reviewers...</div>
+                            ) : reviewersError ? (
+                              <div className="text-red-500 text-base">{reviewersError}</div>
+                            ) : (
+                              <Listbox value={selectedIdea.assignedReviewer || ''} onChange={async val => {
+                                // Call backend to assign reviewer
+                                await axios.patch(`/api/ideas/${selectedIdea._id}/assign-reviewer`, { assignedReviewer: val });
+                                setSelectedIdea(prev => ({ ...prev, assignedReviewer: val }));
+                              }}>
+                                <div className="relative">
+                                  <Listbox.Button className="w-full border border-background rounded-lg px-3 py-2 text-base bg-background text-onPrimary focus:outline-tertiary focus:ring-2 focus:ring-primary focus:border-primary flex justify-between items-center">
+                                    {reviewers.find(r => r.employeeNumber === selectedIdea.assignedReviewer)?.name || 'Select Reviewer'}
+                                    <span className="ml-2">▼</span>
+                                  </Listbox.Button>
+                                  <Listbox.Options className="absolute mt-1 w-full bg-secondaryContainer rounded-lg shadow-lg z-10">
+                                    {reviewers.map(reviewer => (
+                                      <Listbox.Option
+                                        key={reviewer.employeeNumber}
+                                        value={reviewer.employeeNumber}
+                                        className={({ active, selected }) =>
+                                          `cursor-pointer select-none px-4 py-2 text-black ${active || selected ? 'bg-primary text-surface' : ''}`
+                                        }
+                                      >
+                                        {reviewer.name} ({reviewer.role})
+                                      </Listbox.Option>
+                                    ))}
+                                  </Listbox.Options>
+                                </div>
+                              </Listbox>
+                            )}
+                          </div>
+                        )}
 
                         <div>
-                          <label className="block text-sm font-semibold text-surface mb-2">Review Comments</label>
+                          <label className="block text-base font-semibold text-surface mb-2">Review Comments</label>
                           <textarea
                             value={statusUpdate.reviewComments}
                             onChange={(e) => setStatusUpdate(prev => ({ ...prev, reviewComments: e.target.value }))}
@@ -548,13 +616,13 @@ const AdminIdeasDashboard = () => {
                   <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
                     <button
                       onClick={() => setShowModal(false)}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-tertiary hover:bg-gray-50 transition-colors"
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-base font-medium text-tertiary hover:bg-gray-50 transition-colors"
                     >
                       Close
                     </button>
                     <button
                       onClick={handleStatusUpdate}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg text-base font-medium hover:bg-blue-700 transition-colors"
                     >
                       Update Status
                     </button>

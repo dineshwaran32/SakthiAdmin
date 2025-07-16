@@ -54,6 +54,11 @@ const ideaSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  assignedReviewer: {
+    type: String, // employeeNumber or user ID of the reviewer
+    trim: true,
+    default: ''
+  },
   reviewComments: {
     type: String,
     trim: true

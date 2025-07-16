@@ -67,7 +67,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                 to={item.href}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `group flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                  `group flex items-center px-4 py-3 text-base font-medium rounded-lg transition-all duration-200 ${
                     isActive
                       ? 'bg-primary text-onPrimary shadow-lg'
                       : 'text-onSurface hover:bg-surfaceVariant hover:text-onSurface'
@@ -83,7 +83,7 @@ const Sidebar = ({ isOpen, onClose }) => {
                     />
                     <div className="flex-1">
                       <div className="font-medium">{item.name}</div>
-                      <div className={`text-xs ${
+                      <div className={`text-sm ${
                         isActive ? 'text-onPrimary' : 'text-onSurfaceVariant'
                       }`}>
                         {item.description}
@@ -98,10 +98,10 @@ const Sidebar = ({ isOpen, onClose }) => {
           {/* Footer */}
           <div className="px-4 py-4 border-t border-background">
             <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-3">
-              <div className="text-xs font-medium text-onSurface">System Status</div>
+              <div className="text-sm font-medium text-onSurface">System Status</div>
               <div className="flex items-center mt-1">
                 <div className="w-2 h-2 bg-success rounded-full animate-pulse"></div>
-                <span className="ml-2 text-xs text-onSurfaceVariant">All systems operational</span>
+                <span className="ml-2 text-sm text-onSurfaceVariant">All systems operational</span>
               </div>
             </div>
           </div>

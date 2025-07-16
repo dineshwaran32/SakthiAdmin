@@ -71,7 +71,7 @@ const Leaderboard = () => {
       case 3:
         return <Award className="h-6 w-6 text-amber-600" />;
       default:
-        return <span className="text-lg font-bold text-gray-500">#{rank}</span>;
+        return <span className="text-xl font-bold text-gray-500">#{rank}</span>;
     }
   };
 
@@ -101,22 +101,22 @@ const Leaderboard = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-onPrimary">Employee Leaderboard</h1>
-          <p className="mt-1 text-sm text-onPrimary">
+          <h1 className="text-3xl font-bold text-onPrimary">Employee Leaderboard</h1>
+          <p className="mt-1 text-base text-onPrimary">
             Rankings based on credit points earned from idea submissions
           </p>
         </div>
         <div className="mt-4 sm:mt-0 flex space-x-3">
           <button
             onClick={handleExport}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-base font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
           >
             <Download className="h-4 w-4 mr-2" />
             Export Excel
           </button>
           <button
             onClick={handlePrint}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors print:hidden"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-base font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors print:hidden"
           >
             <Printer className="h-4 w-4 mr-2" />
             Print
@@ -135,7 +135,7 @@ const Leaderboard = () => {
               placeholder="Search employees..."
               value={filters.search}
               onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-              className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -143,7 +143,7 @@ const Leaderboard = () => {
           <select
             value={filters.department}
             onChange={(e) => setFilters(prev => ({ ...prev, department: e.target.value }))}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Departments</option>
             {departments.map(dept => (
@@ -160,7 +160,7 @@ const Leaderboard = () => {
         // <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-8 print:bg-white print:border">
         <div>
 
-          <h2 className="text-xl text-primary font-bold text-center text-gray-900 mb-8 ">Top Performers</h2>
+          <h2 className="text-2xl text-primary font-bold text-center text-gray-900 mb-8 ">Top Performers</h2>
           <div className="flex justify-center items-end space-x-8">
             {/* Second Place */}
             <div className="text-center ">
@@ -169,8 +169,8 @@ const Leaderboard = () => {
               </div>
               <div className="bg-secondary-container rounded-lg p-4 shadow-md min-w-[120px] text-center">
                 <h3 className="font-semibold text-tertiary ">{employees[1]?.name}</h3>
-                <p className="text-sm text-surfaceVariant">{employees[1]?.department}</p>
-                <p className="text-lg font-bold text-primary mt-2">
+                <p className="text-base text-surfaceVariant">{employees[1]?.department}</p>
+                <p className="text-xl font-bold text-primary mt-2">
                   {employees[1]?.creditPoints} pts
                 </p>
               </div>
@@ -183,8 +183,8 @@ const Leaderboard = () => {
               </div>
               <div className="bg-secondary-container rounded-lg p-4 shadow-lg min-w-[120px] border-2 border-primary">
                 <h3 className="font-bold text-tertiary">{employees[0]?.name}</h3>
-                <p className="text-sm text-surfaceVariant">{employees[0]?.department}</p>
-                <p className="text-xl font-bold text-primary mt-2">
+                <p className="text-base text-surfaceVariant">{employees[0]?.department}</p>
+                <p className="text-2xl font-bold text-primary mt-2">
                   {employees[0]?.creditPoints} pts
                 </p>
               </div>
@@ -197,8 +197,8 @@ const Leaderboard = () => {
               </div>
               <div className="bg-secondary-container rounded-lg p-4 shadow-md min-w-[120px]">
                 <h3 className="font-semibold text-tertiary">{employees[2]?.name}</h3>
-                <p className="text-sm text-surfaceVariant">{employees[2]?.department}</p>
-                <p className="text-lg font-bold text-primary mt-2">
+                <p className="text-base text-surfaceVariant">{employees[2]?.department}</p>
+                <p className="text-xl font-bold text-primary mt-2">
                   {employees[2]?.creditPoints} pts
                 </p>
               </div>
@@ -210,26 +210,26 @@ const Leaderboard = () => {
       {/* Full Leaderboard Table */}
       <div className="bg-secondary-container rounded-lg shadow-sm border border-background overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-surface">Complete Rankings</h2>
+          <h2 className="text-xl font-semibold text-surface">Complete Rankings</h2>
         </div>
         
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 ">
             <thead className="bg-secondaryContainer">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
                   Rank
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
                   Employee
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
                   Department
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
                   Credit Points
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-500 uppercase tracking-wider">
                   Employee ID
                 </th>
               </tr>
@@ -241,43 +241,32 @@ const Leaderboard = () => {
                   <tr key={employee._id} className={rank <= 3 ? 'bg-yellow-50' : 'hover:bg-gray-50'}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold ${getRankBadge(rank)}`}>
+                        <span className={`inline-flex items-center justify-center w-8 h-8 rounded-full text-base font-bold ${getRankBadge(rank)}`}>
                           {rank <= 3 ? getRankIcon(rank) : rank}
                         </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 bg-gradient-to-r from-primary to-tertiary rounded-full flex items-center justify-center">
-                          <span className="text-white font-medium text-sm">
-                            {employee.name.split(' ').map(n => n[0]).join('')}
-                          </span>
+                        <div className="flex-shrink-0 h-10 w-10">
+                          {/* Placeholder for avatar */}
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {employee.name}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {employee.email}
-                          </div>
+                          <div className="text-base font-medium text-gray-900">{employee.name}</div>
+                          <div className="text-sm text-gray-500">{employee.email}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-tertiary text-gray-800">
-                        {employee.department}
-                      </span>
+                      <div className="text-base text-gray-900">{employee.department}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <span className="text-2xl font-bold text-gray-900">
-                          {employee.creditPoints}
-                        </span>
-                        <span className="ml-1 text-sm text-gray-500">pts</span>
-                      </div>
+                      <span className="px-2 inline-flex text-base leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                        {employee.creditPoints}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      #{employee.employeeNumber}
+                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500">
+                      {employee.employeeNumber}
                     </td>
                   </tr>
                 );

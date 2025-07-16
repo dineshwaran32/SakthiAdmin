@@ -2,12 +2,12 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { NotificationProvider } from './context/NotificationContext';
 import Layout from './components/Layout/Layout';
 import Login from './components/Auth/Login';
 import Leaderboard from './pages/Leaderboard';
 import EmployeeManagement from './pages/EmployeeManagement';
 import AdminIdeasDashboard from './pages/AdminIdeasDashboard';
+import { NotificationProvider } from './context/NotificationContext';
 
 // Set axios base URL
 axios.defaults.baseURL = 'http://localhost:5001';

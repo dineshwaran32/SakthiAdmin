@@ -1,6 +1,5 @@
 import express from 'express';
 import User from '../models/User.js';
-import Notification from '../models/Notification.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -36,14 +35,6 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
 
     const user = new User({ name, email, password, role });
     await user.save();
-
-    // Create notification
-    await Notification.create({
-      type: 'new_reviewer_added',
-      title: 'New Reviewer Added',
-      message: `${name} has been added as a ${role}`,
-      recipientRole: 'admin'
-    });
 
     res.status(201).json({
       id: user._id,

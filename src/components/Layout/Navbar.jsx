@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { Bell, User, LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNotifications } from '../../context/NotificationContext';
-import NotificationDropdown from './NotificationDropdown';
 import logo from '../../logo.png';
 
 const Navbar = ({ onMenuToggle, isMobileMenuOpen }) => {
   const { user, logout } = useAuth();
-  const { unreadCount } = useNotifications();
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
+  const [showNotif, setShowNotif] = useState(false);
+  const { notifications, loading: notifLoading, refreshNotifications, markAsRead, markAllAsRead } = useNotifications();
+
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleLogout = () => {
     logout();
@@ -47,19 +48,42 @@ const Navbar = ({ onMenuToggle, isMobileMenuOpen }) => {
             {/* Notifications */}
             <div className="relative">
               <button
-                onClick={() => setShowNotifications(!showNotifications)}
                 className="relative p-2 rounded-lg text-onPrimary hover:text-primary hover:bg-background transition-colors"
+                aria-label="Notifications"
+                onClick={() => setShowNotif(!showNotif)}
               >
                 <Bell className="h-6 w-6" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-primary text-onPrimary text-xs rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </span>
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
                 )}
               </button>
-
-              {showNotifications && (
-                <NotificationDropdown onClose={() => setShowNotifications(false)} />
+              {showNotif && (
+                <div className="absolute right-0 mt-2 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50 max-h-[32rem] overflow-y-auto">
+                  <div className="px-6 py-3 border-b border-gray-100 flex justify-between items-center bg-white rounded-t-xl">
+                    <span className="font-semibold text-lg text-gray-900">Notifications</span>
+                    <div className="flex items-center gap-3">
+                      <button className="text-sm text-blue-600 hover:underline" onClick={refreshNotifications}>Refresh</button>
+                      <button className="text-sm text-blue-600 hover:underline" onClick={markAllAsRead}>Mark all as read</button>
+                    </div>
+                  </div>
+                  {notifLoading ? (
+                    <div className="px-6 py-6 text-center text-blue-600 text-base">Loading...</div>
+                  ) : notifications.length === 0 ? (
+                    <div className="px-6 py-6 text-center text-gray-400 text-base">No notifications</div>
+                  ) : (
+                    notifications.slice(0, 10).map((notif, idx) => (
+                      <div
+                        key={notif._id || idx}
+                        className={`group px-6 py-4 border-b border-gray-100 transition-all duration-150 ${!notif.isRead ? 'bg-yellow-50' : 'bg-white'} ${!notif.isRead ? 'shadow-md' : ''} rounded-lg mb-1 cursor-pointer hover:bg-tertiary hover:shadow-lg`}
+                        onClick={() => !notif.isRead && markAsRead(notif._id)}
+                      >
+                        <div className="font-bold text-lg text-gray-900 mb-1">{notif.title}</div>
+                        <div className="text-base text-gray-700 mb-2">{notif.message}</div>
+                        <div className="text-s text-right text-primary mt-1 group-hover:text-surface">{new Date(notif.createdAt).toLocaleString()}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
               )}
             </div>
 

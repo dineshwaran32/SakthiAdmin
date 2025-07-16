@@ -367,7 +367,7 @@ const EmployeeManagement = () => {
             ) : (
               <AlertCircle className="h-5 w-5 mr-2" />
             )}
-            <span className="text-sm font-medium">{alert.message}</span>
+            <span className="text-base font-medium">{alert.message}</span>
             <button
               onClick={() => setAlert({ show: false, type: '', message: '' })}
               className="ml-4 text-gray-400 hover:text-gray-600"
@@ -381,34 +381,34 @@ const EmployeeManagement = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-onPrimary">Employee Management</h1>
-          <p className="mt-1 text-sm text-onPrimary">Manage employee data</p>
+          <h1 className="text-3xl font-bold text-onPrimary">Employee Management</h1>
+          <p className="mt-1 text-base text-onPrimary">Manage employee data</p>
         </div>
         <div className="mt-4 sm:mt-0 flex flex-wrap gap-3">
           <button
             onClick={() => setShowImportModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-base font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
           >
             <Upload className="h-4 w-4 mr-2" />
             Import Excel
           </button>
           <button
             onClick={() => setShowBulkDeleteModal(true)}
-            className="inline-flex items-center px-4 py-2 border border-red-300 rounded-lg text-sm font-medium text-red-700 bg-white hover:bg-red-50 transition-colors"
+            className="inline-flex items-center px-4 py-2 border border-red-300 rounded-lg text-base font-medium text-red-700 bg-white hover:bg-red-50 transition-colors"
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Bulk Delete
           </button>
           <button
             onClick={handleExport}
-            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+            className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-base font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
           >
             <Download className="h-4 w-4 mr-2" />
             Export Excel
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-400 to-orange-600 text-white rounded-lg text-sm font-medium hover:from-orange-500 hover:to-orange-700 transition-all shadow-lg"
+            className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-orange-400 to-orange-600 text-white rounded-lg text-base font-medium hover:from-orange-500 hover:to-orange-700 transition-all shadow-lg"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Employee
@@ -478,7 +478,7 @@ const EmployeeManagement = () => {
               placeholder="Search employees..."
               value={filters.search}
               onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-              className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="pl-10 w-full border border-gray-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
 
@@ -486,7 +486,7 @@ const EmployeeManagement = () => {
           <select
             value={filters.department}
             onChange={(e) => setFilters(prev => ({ ...prev, department: e.target.value }))}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="all">All Departments</option>
             {departments.map(dept => (
@@ -498,7 +498,7 @@ const EmployeeManagement = () => {
           <select
             value={filters.sortBy}
             onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="name">Sort by Name</option>
             <option value="creditPoints">Sort by Credit Points</option>
@@ -510,7 +510,7 @@ const EmployeeManagement = () => {
           <select
             value={filters.sortOrder}
             onChange={(e) => setFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="asc">Ascending</option>
             <option value="desc">Descending</option>
@@ -521,7 +521,7 @@ const EmployeeManagement = () => {
             <select
               value={roleFilter}
               onChange={e => setRoleFilter(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Roles</option>
               <option value="admin">Admin</option>
@@ -574,27 +574,27 @@ const EmployeeManagement = () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div className="w-10 h-10 bg-gradient-to-r from-primary to-tertiary rounded-full flex items-center justify-center group-hover:text-primary group-hover:bg-gradient-to-r group-hover:from-surface group-hover:to-background ">
-                          <span className="text-white font-medium text-sm">
+                          <span className="text-white font-medium text-base">
                             {employee.name.split(' ').map(n => n[0]).join('')}
                           </span>
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900 group-hover:text-surface">
+                          <div className="text-base font-medium text-gray-900 group-hover:text-surface">
                             {employee.name}
                           </div>
-                          <div className="text-sm text-gray-500 group-hover:text-surface">
+                          <div className="text-base text-gray-500 group-hover:text-surface">
                             #{employee.employeeNumber}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 group-hover:bg-tertiary">
-                        <p className="text-sm text-gray-500 group-hover:text-surface">{employee.department}</p>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800 group-hover:bg-tertiary">
+                        <p className="text-base text-gray-500 group-hover:text-surface">{employee.department}</p>
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900 group-hover:text-surface">{employee.mobileNumber || employee.email}</div>
+                      <div className="text-base text-gray-900 group-hover:text-surface">{employee.mobileNumber || employee.email}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
@@ -604,10 +604,10 @@ const EmployeeManagement = () => {
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 group-hover:text-surface">
+                    <td className="px-6 py-4 whitespace-nowrap text-base text-gray-500 group-hover:text-surface">
                       {employee.designation}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-base font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         <button
                           onClick={() => openEditModal(employee)}
@@ -638,21 +638,21 @@ const EmployeeManagement = () => {
                 <button
                   onClick={() => setPagination(prev => ({ ...prev, currentPage: prev.currentPage - 1 }))}
                   disabled={pagination.currentPage === 1}
-                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => setPagination(prev => ({ ...prev, currentPage: prev.currentPage + 1 }))}
                   disabled={pagination.currentPage === pagination.totalPages}
-                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                  className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                 >
                   Next
                 </button>
               </div>
               <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                 <div>
-                  <p className="text-sm text-gray-700">
+                  <p className="text-base text-gray-700">
                     Showing <span className="font-medium">{((pagination.currentPage - 1) * 20) + 1}</span> to{' '}
                     <span className="font-medium">
                       {Math.min(pagination.currentPage * 20, pagination.total)}
@@ -666,7 +666,7 @@ const EmployeeManagement = () => {
                       <button
                         key={page}
                         onClick={() => setPagination(prev => ({ ...prev, currentPage: page }))}
-                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                        className={`relative inline-flex items-center px-4 py-2 border text-base font-medium ${
                           page === pagination.currentPage
                             ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
                             : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
@@ -701,21 +701,16 @@ const EmployeeManagement = () => {
       {/* Add Employee Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full">
+          <div className="bg-white rounded-lg max-w-2xl w-full">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Add New Employee</h2>
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">Add New Employee</h2>
+                <button onClick={() => setShowAddModal(false)}><X className="h-6 w-6" /></button>
               </div>
 
               <form onSubmit={handleAddEmployee} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
                     Employee Number *
                   </label>
                   <input
@@ -729,7 +724,7 @@ const EmployeeManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
                     Full Name *
                   </label>
                   <input
@@ -743,7 +738,7 @@ const EmployeeManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
                     Email Address *
                   </label>
                   <input
@@ -757,7 +752,7 @@ const EmployeeManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
                     Department *
                   </label>
                   <input
@@ -771,7 +766,7 @@ const EmployeeManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
                     Designation *
                   </label>
                   <input
@@ -785,7 +780,7 @@ const EmployeeManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
                     Phone Number *
                   </label>
                   <input
@@ -799,7 +794,7 @@ const EmployeeManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
                     Initial Credit Points
                   </label>
                   <input
@@ -816,13 +811,13 @@ const EmployeeManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowAddModal(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-base font-medium hover:bg-blue-700 flex items-center"
                   >
                     <Save className="h-4 w-4 mr-2" />
                     Add Employee
@@ -837,21 +832,16 @@ const EmployeeManagement = () => {
       {/* Edit Employee Modal */}
       {showEditModal && selectedEmployee && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-md w-full">
+          <div className="bg-white rounded-lg max-w-2xl w-full">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Edit Employee</h2>
-                <button
-                  onClick={() => setShowEditModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">Edit Employee</h2>
+                <button onClick={() => setShowEditModal(false)}><X className="h-6 w-6" /></button>
               </div>
 
               <form onSubmit={handleEditEmployee} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
                     Employee Number *
                   </label>
                   <input
@@ -864,7 +854,7 @@ const EmployeeManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
                     Full Name *
                   </label>
                   <input
@@ -877,7 +867,7 @@ const EmployeeManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
                     Email Address *
                   </label>
                   <input
@@ -890,7 +880,7 @@ const EmployeeManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
                     Department *
                   </label>
                   <input
@@ -903,7 +893,7 @@ const EmployeeManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
                     Designation *
                   </label>
                   <input
@@ -916,7 +906,7 @@ const EmployeeManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
                     Phone Number *
                   </label>
                   <input
@@ -929,7 +919,7 @@ const EmployeeManagement = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-base font-medium text-gray-700 mb-2">
                     Credit Points
                   </label>
                   <input
@@ -945,13 +935,13 @@ const EmployeeManagement = () => {
                   <button
                     type="button"
                     onClick={() => setShowEditModal(false)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="px-4 py-2 border border-gray-300 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-base font-medium hover:bg-blue-700 flex items-center"
                   >
                     <Save className="h-4 w-4 mr-2" />
                     Update Employee
@@ -968,18 +958,9 @@ const EmployeeManagement = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-lg w-full">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Import Employees</h2>
-                <button
-                  onClick={() => {
-                    setShowImportModal(false);
-                    setImportFile(null);
-                    setImportResults(null);
-                  }}
-                  className="p-2 hover:bg-gray-100 rounded-lg"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">Import Employees</h2>
+                <button onClick={() => setShowImportModal(false)}><X className="h-6 w-6" /></button>
               </div>
 
               <div className="space-y-4">
@@ -998,7 +979,7 @@ const EmployeeManagement = () => {
 
                 <form onSubmit={handleImport}>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-base font-medium text-gray-700 mb-2">
                       Select Excel File
                     </label>
                     <input
@@ -1016,7 +997,7 @@ const EmployeeManagement = () => {
                         ? 'bg-green-50 border-green-200' 
                         : 'bg-red-50 border-red-200'
                     }`}>
-                      <p className={`text-sm font-medium ${
+                      <p className={`text-base font-medium ${
                         importResults.success ? 'text-green-800' : 'text-red-800'
                       }`}>
                         {importResults.message}
@@ -1039,14 +1020,14 @@ const EmployeeManagement = () => {
                         setImportFile(null);
                         setImportResults(null);
                       }}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={!importFile || importLoading}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 flex items-center disabled:opacity-50"
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg text-base font-medium hover:bg-blue-700 flex items-center disabled:opacity-50"
                     >
                       {importLoading ? (
                         <>
@@ -1073,27 +1054,17 @@ const EmployeeManagement = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-lg w-full">
             <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-red-900">Bulk Delete Employees</h2>
-                <button
-                  onClick={() => {
-                    setShowBulkDeleteModal(false);
-                    setBulkDeleteFile(null);
-                    setBulkDeleteResults(null);
-                    setBulkDeleteLoading(false);
-                  }}
-                  className="p-2 hover:bg-gray-100 rounded-lg"
-                >
-                  <X className="h-5 w-5" />
-                </button>
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-red-900">Bulk Delete Employees</h2>
+                <button onClick={() => setShowBulkDeleteModal(false)}><X className="h-6 w-6" /></button>
               </div>
 
               <div className="space-y-4">
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <h4 className="text-sm font-medium text-red-900 mb-2">⚠️ Warning: This action cannot be undone!</h4>
-                  <p className="text-xs text-red-800 mb-2">This will permanently delete the selected employees from the system.</p>
+                  <p className="text-base text-red-800 mb-2">This will permanently delete the selected employees from the system.</p>
                   <h4 className="text-sm font-medium text-red-900 mb-2">Excel Format Requirements</h4>
-                  <ul className="text-xs text-red-800 space-y-1">
+                  <ul className="text-sm text-red-800 space-y-1">
                     <li>• <b>Employee Number</b> (required, must match exactly)</li>
                     <li>• The file should contain only one column: <b>Employee Number</b></li>
                     <li>• Each row should contain one employee number to delete</li>
@@ -1104,7 +1075,7 @@ const EmployeeManagement = () => {
                   <button
                     type="button"
                     onClick={handleDownloadTemplate}
-                    className="inline-flex items-center px-4 py-2 border border-blue-300 rounded-lg text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors"
+                    className="inline-flex items-center px-4 py-2 border border-blue-300 rounded-lg text-base font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 transition-colors"
                   >
                     <Download className="h-4 w-4 mr-2" />
                     Download Template
@@ -1113,7 +1084,7 @@ const EmployeeManagement = () => {
 
                 <form onSubmit={handleBulkDelete}>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-base font-medium text-gray-700 mb-2">
                       Select Excel File with Employee IDs
                     </label>
                     <input
@@ -1131,7 +1102,7 @@ const EmployeeManagement = () => {
                         ? 'bg-green-50 border-green-200' 
                         : 'bg-red-50 border-red-200'
                     }`}>
-                      <p className={`text-sm font-medium ${
+                      <p className={`text-base font-medium ${
                         bulkDeleteResults.success ? 'text-green-800' : 'text-red-800'
                       }`}>
                         {bulkDeleteResults.message}
@@ -1190,14 +1161,14 @@ const EmployeeManagement = () => {
                         setBulkDeleteResults(null);
                         setBulkDeleteLoading(false);
                       }}
-                      className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      className="px-4 py-2 border border-gray-300 rounded-lg text-base font-medium text-gray-700 hover:bg-gray-50"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={!bulkDeleteFile || bulkDeleteLoading}
-                      className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 flex items-center disabled:opacity-50"
+                      className="px-4 py-2 bg-red-600 text-white rounded-lg text-base font-medium hover:bg-red-700 flex items-center disabled:opacity-50"
                     >
                       {bulkDeleteLoading ? (
                         <>

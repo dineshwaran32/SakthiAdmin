@@ -2,7 +2,6 @@ import express from 'express';
 import multer from 'multer';
 import XLSX from 'xlsx';
 import User from '../models/User.js';
-import Notification from '../models/Notification.js';
 import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -88,14 +87,6 @@ router.post('/', authenticateToken, requireAdmin, async (req, res) => {
     const employee = new User(req.body);
     await employee.save();
     
-    // Create notification
-    await Notification.create({
-      type: 'system_update',
-      title: 'New Employee Added',
-      message: `Employee ${employee.name} (${employee.employeeNumber}) has been added to the system`,
-      recipientRole: 'admin'
-    });
-
     res.status(201).json(employee);
   } catch (error) {
     if (error.code === 11000) {
@@ -161,14 +152,6 @@ router.patch('/:id/credits', authenticateToken, requireAdmin, async (req, res) =
       return res.status(404).json({ message: 'Employee not found' });
     }
 
-    // Create notification
-    await Notification.create({
-      type: 'credit_points_updated',
-      title: 'Credit Points Updated',
-      message: `Your credit points have been updated to ${creditPoints}. ${reason || ''}`,
-      recipientEmployeeNumber: employee.employeeNumber
-    });
-
     res.json(employee);
   } catch (error) {
     console.error('Update credits error:', error);
@@ -220,12 +203,17 @@ router.post('/bulk-import', authenticateToken, requireAdmin, upload.single('file
           employeeNumber: String(row.employeeNumber || row['Employee Number'] || ''),
           name: row.name || row['Name'],
           email: row.email || row['Email'],
-          department: row.department || row['Department'],
+          department: (row.department || row['Department'] || '').toLowerCase(),
           designation: row.designation || row['Designation'],
-          role: row.role || row['Role'] || 'employee',
+          role: (row.role || row['Role'] || 'employee').toLowerCase(),
           creditPoints: row.creditPoints || row['Credit Points'] || 0,
           mobileNumber: String(row.mobileNumber || row['Mobile Number'] || '')
         };
+        // Add +91 prefix if not present
+        if (employeeData.mobileNumber && !employeeData.mobileNumber.startsWith('+91')) {
+          // Remove any leading zeros or pluses before adding +91
+          employeeData.mobileNumber = '+91' + employeeData.mobileNumber.replace(/^0+|^\+/, '');
+        }
         // Check for duplicate email (with different employeeNumber)
         const existingByEmail = await User.findOne({ email: employeeData.email });
         if (existingByEmail && existingByEmail.employeeNumber !== employeeData.employeeNumber) {
@@ -354,13 +342,6 @@ router.post('/bulk-delete', authenticateToken, requireAdmin, upload.single('file
         if (deletedEmployee) {
           results.push(deletedEmployee);
           successes.push(`Row ${i + 2}: Deleted employee ${deletedEmployee.name} (${deletedEmployee.employeeNumber})`);
-          // Create notification for the deletion
-          await Notification.create({
-            type: 'employee_deleted',
-            title: 'Employee Deleted',
-            message: `Employee ${deletedEmployee.name} (${deletedEmployee.employeeNumber}) has been removed from the system`,
-            recipientRole: 'admin'
-          });
         } else {
           notFound.push(`Row ${i + 2}: Employee with Employee Number "${employeeNumber}" not found`);
         }

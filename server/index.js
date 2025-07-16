@@ -6,7 +6,6 @@ import authRoutes from './routes/auth.js';
 import employeeRoutes from './routes/employees.js';
 import ideaRoutes from './routes/ideas.js';
 import reviewerRoutes from './routes/reviewers.js';
-import notificationRoutes from './routes/notifications.js';
 import usersRoutes from './routes/users.js';
 
 dotenv.config();
@@ -60,7 +59,6 @@ const setupRoutes = () => {
     app.use('/api/employees', employeeRoutes);
     app.use('/api/ideas', ideaRoutes);
     app.use('/api/reviewers', reviewerRoutes);
-    app.use('/api/notifications', notificationRoutes);
     app.use('/api/users', usersRoutes);
     console.log('✅ API routes mounted');
   } else {
@@ -115,16 +113,6 @@ const setupRoutes = () => {
         employees: [],
         total: 0,
         departments: [],
-        totalPages: 0,
-        currentPage: 1
-      });
-    });
-
-    app.get('/api/notifications', (req, res) => {
-      res.json({
-        notifications: [],
-        unreadCount: 0,
-        total: 0,
         totalPages: 0,
         currentPage: 1
       });

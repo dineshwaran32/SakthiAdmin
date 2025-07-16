@@ -1,16 +1,30 @@
 import mongoose from 'mongoose';
 
 const notificationSchema = new mongoose.Schema({
+  recipient: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  recipientEmployeeNumber: {
+    type: String,
+    required: true
+  },
   type: {
     type: String,
     enum: [
-      'idea_submitted',
-      'idea_status_updated',
+      'idea_submitted', 
+      'idea_approved', 
+      'idea_rejected', 
+      'idea_implementing', 
+      'idea_implemented',
+      'idea_updated',
+      'review_assigned',
+      'leaderboard_change',
       'credit_points_updated',
-      'new_reviewer_added',
-      'idea_reviewed',
-      'system_update',
-      'employee_deleted'
+      'milestone_achieved',
+      'department_leader',
+      'weekly_summary'
     ],
     required: true
   },
@@ -24,48 +38,43 @@ const notificationSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  recipientEmployeeNumber: {
-    type: String,
-    trim: true
-  },
-  recipientRole: {
-    type: String,
-    enum: ['admin', 'reviewer', 'employee', 'all'],
-    default: 'all'
-  },
-  relatedId: {
+  relatedIdea: {
     type: mongoose.Schema.Types.ObjectId,
-    refPath: 'relatedModel'
+    ref: 'Idea'
   },
-  relatedModel: {
-    type: String,
-    enum: ['Idea', 'Employee', 'User']
+  relatedUser: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  metadata: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {}
   },
   isRead: {
     type: Boolean,
     default: false
   },
+  readAt: {
+    type: Date
+  },
   priority: {
     type: String,
-    enum: ['low', 'medium', 'high', 'urgent'],
+    enum: ['low', 'medium', 'high'],
     default: 'medium'
   },
-  actionUrl: {
-    type: String,
-    trim: true
-  },
-  isActive: {
-    type: Boolean,
-    default: true
+  createdAt: {
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: true
 });
 
-// Index for faster queries
-notificationSchema.index({ recipientEmployeeNumber: 1, isRead: 1 });
-notificationSchema.index({ recipientRole: 1, isRead: 1 });
-notificationSchema.index({ type: 1 });
+// Indexes
+notificationSchema.index({ recipient: 1, isRead: 1 });
+notificationSchema.index({ recipientEmployeeNumber: 1 });
 notificationSchema.index({ createdAt: -1 });
+notificationSchema.index({ type: 1 });
+notificationSchema.index({ priority: 1 });
 
-export default mongoose.model('Notification', notificationSchema);
+export default mongoose.model('Notification', notificationSchema); 

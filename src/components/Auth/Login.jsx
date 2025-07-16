@@ -57,10 +57,10 @@ const Login = () => {
           <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
             <Lock className="h-8 w-8 text-onPrimary" />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-onSurface">
+          <h2 className="mt-6 text-4xl font-bold text-onSurface">
             Welcome Back
           </h2>
-          <p className="mt-2 text-sm text-onSurfaceVariant">
+          <p className="mt-2 text-base text-onSurfaceVariant">
             Sign in to your Admin & Reviewer Portal
           </p>
         </div>
@@ -71,8 +71,8 @@ const Login = () => {
             <div className="bg-error bg-opacity-10 border border-error rounded-lg p-4 flex items-start space-x-3">
               <AlertCircle className="h-5 w-5 text-error mt-0.5 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-error">Login Failed</p>
-                <p className="text-sm text-error mt-1">{error}</p>
+                <p className="text-base font-medium text-error">Login Failed</p>
+                <p className="text-base text-error mt-1">{error}</p>
               </div>
             </div>
           )}
@@ -80,7 +80,7 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Employee Number Field */}
             <div>
-              <label htmlFor="employeeNumber" className="block text-sm font-medium text-onSurface mb-2">
+              <label htmlFor="employeeNumber" className="block text-base font-medium text-onSurface mb-2">
                 Employee Number
               </label>
               <div className="relative">
@@ -102,7 +102,7 @@ const Login = () => {
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-onSurface mb-2">
+              <label htmlFor="password" className="block text-base font-medium text-onSurface mb-2">
                 Password
               </label>
               <div className="relative">
@@ -138,7 +138,7 @@ const Login = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-onPrimary bg-primary hover:bg-tertiary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-base font-medium rounded-lg text-onPrimary bg-primary hover:bg-tertiary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-lg hover:shadow-xl"
               >
                 {loading ? (
                   <>
@@ -154,8 +154,8 @@ const Login = () => {
 
           {/* Demo Credentials */}
           <div className="mt-6 p-4 bg-primary-container border border-primary rounded-lg">
-            <h4 className="text-sm font-medium text-primary mb-2">Demo Credentials</h4>
-            <div className="text-xs text-primary space-y-1">
+            <h4 className="text-base font-medium text-primary mb-2">Demo Credentials</h4>
+            <div className="text-sm text-primary space-y-1">
               <p><strong>Admin:</strong> admin@example.com / admin123</p>
               <p><strong>Reviewer:</strong> reviewer@example.com / reviewer123</p>
             </div>
@@ -164,7 +164,7 @@ const Login = () => {
 
         {/* Footer */}
         <div className="text-center">
-          <p className="text-xs text-onSurfaceVariant">
+          <p className="text-sm text-onSurfaceVariant">
             Sakthi Spark v1.0 • Admin & Reviewer Dashboard
           </p>
         </div>

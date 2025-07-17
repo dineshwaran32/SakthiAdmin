@@ -21,7 +21,7 @@ export const NotificationProvider = ({ children }) => {
     if (!user) return;
     setLoading(true);
     try {
-      const res = await axios.get('/api/ideas/notifications');
+      const res = await axios.get('/api/admin/ideas/notifications');
       setNotifications(res.data.notifications || []);
     } catch (err) {
       setNotifications([]);
@@ -32,14 +32,14 @@ export const NotificationProvider = ({ children }) => {
 
   const markAsRead = async (id) => {
     try {
-      await axios.patch(`/api/ideas/notifications/${id}/read`);
+      await axios.patch(`/api/admin/ideas/notifications/${id}/read`);
       setNotifications((prev) => prev.map(n => n._id === id ? { ...n, read: true } : n));
     } catch (err) {}
   };
 
   const markAllAsRead = async () => {
     try {
-      await axios.patch('/api/ideas/notifications/read-all');
+      await axios.patch('/api/admin/ideas/notifications/read-all');
       setNotifications((prev) => prev.map(n => ({ ...n, isRead: true, readAt: n.readAt || new Date() })));
     } catch (err) {}
   };

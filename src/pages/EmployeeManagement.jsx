@@ -77,7 +77,7 @@ const EmployeeManagement = () => {
   const fetchEmployees = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/users');
+      const response = await axios.get('/api/admin/users');
       setEmployees(response.data.users);
       setDepartments(response.data.departments);
       setPagination({
@@ -113,7 +113,7 @@ const EmployeeManagement = () => {
   const handleAddEmployee = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post('/api/employees', employeeForm);
+      const response = await axios.post('/api/admin/employees', employeeForm);
       setEmployees(prev => [response.data, ...prev]);
       setShowAddModal(false);
       resetForm();
@@ -126,7 +126,7 @@ const EmployeeManagement = () => {
   const handleEditEmployee = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.put(`/api/users/${selectedEmployee._id}`, employeeForm);
+      const response = await axios.put(`/api/admin/users/${selectedEmployee._id}`, employeeForm);
       setEmployees(prev => prev.map(emp => 
         emp._id === selectedEmployee._id ? response.data : emp
       ));
@@ -145,7 +145,7 @@ const EmployeeManagement = () => {
     }
 
     try {
-      await axios.delete(`/api/users/${employee._id}`);
+      await axios.delete(`/api/admin/users/${employee._id}`);
       setEmployees(prev => prev.filter(emp => emp._id !== employee._id));
       showAlert('success', 'Employee deleted successfully!');
     } catch (error) {
@@ -155,7 +155,7 @@ const EmployeeManagement = () => {
 
   const handleUpdateCredits = async (employee, newCredits, reason) => {
     try {
-      const response = await axios.patch(`/api/employees/${employee._id}/credits`, {
+      const response = await axios.patch(`/api/admin/employees/${employee._id}/credits`, {
         creditPoints: newCredits,
         reason
       });
@@ -170,7 +170,7 @@ const EmployeeManagement = () => {
 
   const handleExport = async () => {
     try {
-      const response = await axios.get('/api/employees/export/excel', {
+      const response = await axios.get('/api/admin/employees/export/excel', {
         responseType: 'blob'
       });
       
@@ -197,7 +197,7 @@ const EmployeeManagement = () => {
       formData.append('file', importFile);
       console.log(formData);
 
-      const response = await axios.post('/api/employees/bulk-import', formData, {
+      const response = await axios.post('/api/admin/employees/bulk-import', formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
@@ -250,7 +250,7 @@ const EmployeeManagement = () => {
       const formData = new FormData();
       formData.append('file', bulkDeleteFile);
 
-      const response = await axios.post('/api/employees/bulk-delete', formData, {
+      const response = await axios.post('/api/admin/employees/bulk-delete', formData, {
         headers: { 
           'Content-Type': 'multipart/form-data'
         },
@@ -300,7 +300,7 @@ const EmployeeManagement = () => {
 
   const handleDownloadTemplate = async () => {
     try {
-      const response = await axios.get('/api/employees/bulk-delete-template', {
+      const response = await axios.get('/api/admin/employees/bulk-delete-template', {
         responseType: 'blob'
       });
       

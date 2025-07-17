@@ -97,7 +97,7 @@ const AdminIdeasDashboard = () => {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('/api/ideas/stats/dashboard');
+      const response = await axios.get('/api/admin/ideas/stats/dashboard');
       setStats(response.data);
     } catch (err) {
       setError('Failed to fetch idea statistics');
@@ -114,21 +114,21 @@ const AdminIdeasDashboard = () => {
   const fetchIdeas = async () => {
     try {
       setIdeasLoading(true);
-      let url = `/api/ideas?limit=50&sortBy=createdAt&sortOrder=desc`;
-      if (selectedStatus && selectedStatus !== 'all') url += `&status=${selectedStatus}`;
-      if (search) url += `&search=${encodeURIComponent(search)}`;
-      if (filterStatus && filterStatus !== 'all') url += `&status=${filterStatus}`;
+      let ideasUrl = `/api/admin/ideas?limit=50&sortBy=createdAt&sortOrder=desc`;
+      if (selectedStatus && selectedStatus !== 'all') ideasUrl += `&status=${selectedStatus}`;
+      if (search) ideasUrl += `&search=${encodeURIComponent(search)}`;
+      if (filterStatus && filterStatus !== 'all') ideasUrl += `&status=${filterStatus}`;
       if (
         isAdmin ||
         ((selectedStatus !== 'approved' && selectedStatus !== 'implemented') && (filterDepartment && filterDepartment !== 'all')) ||
         ((selectedStatus === 'approved' || selectedStatus === 'implemented') && filterDepartment && filterDepartment !== 'all')
       ) {
-        url += `&department=${filterDepartment}`;
+        ideasUrl += `&department=${filterDepartment}`;
       }
-      if (filterPriority && filterPriority !== 'all') url += `&priority=${filterPriority}`;
-      const response = await axios.get(url);
-      setIdeas(response.data.ideas || []);
-      setDepartments(response.data.departments || []);
+      if (filterPriority && filterPriority !== 'all') ideasUrl += `&priority=${filterPriority}`;
+      const ideasResponse = await axios.get(ideasUrl);
+      setIdeas(ideasResponse.data.ideas || []);
+      setDepartments(ideasResponse.data.departments || []);
     } catch (err) {
       setIdeasError('Failed to fetch ideas list');
     } finally {
@@ -155,8 +155,8 @@ const AdminIdeasDashboard = () => {
   const fetchReviewers = async () => {
     try {
       setReviewersLoading(true);
-      const response = await axios.get('/api/reviewers');
-      setReviewers(response.data);
+      const reviewersResponse = await axios.get('/api/admin/reviewers');
+      setReviewers(reviewersResponse.data);
     } catch (err) {
       setReviewersError('Failed to fetch reviewers');
     } finally {
@@ -167,7 +167,7 @@ const AdminIdeasDashboard = () => {
   const handleStatusUpdate = async () => {
     if (!selectedIdea) return;
     try {
-      await axios.patch(`/api/ideas/${selectedIdea._id}/status`, {
+      await axios.patch(`/api/admin/ideas/${selectedIdea._id}/status`, {
         status: statusUpdate.status,
         reviewComments: statusUpdate.reviewComments,
         priority: statusUpdate.priority,
@@ -186,13 +186,13 @@ const AdminIdeasDashboard = () => {
   // Export Excel handler
   const handleExport = async () => {
     try {
-      let url = `/api/ideas/export/excel?limit=1000&sortBy=createdAt&sortOrder=desc`;
-      if (selectedStatus && selectedStatus !== 'all') url += `&status=${selectedStatus}`;
-      if (search) url += `&search=${encodeURIComponent(search)}`;
-      if (filterDepartment && filterDepartment !== 'all') url += `&department=${filterDepartment}`;
-      if (filterPriority && filterPriority !== 'all') url += `&priority=${filterPriority}`;
-      const response = await axios.get(url, { responseType: 'blob' });
-      const blob = new Blob([response.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      let exportUrl = `/api/admin/ideas/export/excel?limit=1000&sortBy=createdAt&sortOrder=desc`;
+      if (selectedStatus && selectedStatus !== 'all') exportUrl += `&status=${selectedStatus}`;
+      if (search) exportUrl += `&search=${encodeURIComponent(search)}`;
+      if (filterDepartment && filterDepartment !== 'all') exportUrl += `&department=${filterDepartment}`;
+      if (filterPriority && filterPriority !== 'all') exportUrl += `&priority=${filterPriority}`;
+      const exportResponse = await axios.get(exportUrl, { responseType: 'blob' });
+      const blob = new Blob([exportResponse.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const link = document.createElement('a');
       link.href = window.URL.createObjectURL(blob);
       link.setAttribute('download', 'ideas.xlsx');
@@ -317,11 +317,11 @@ const AdminIdeasDashboard = () => {
                     setFilterDepartment('all');
                     setFilterPriority('all');
                     setIdeasLoading(true);
-                    let url = `/api/ideas?limit=50&sortBy=createdAt&sortOrder=desc`;
-                    if (selectedStatus && selectedStatus !== 'all') url += `&status=${selectedStatus}`;
-                    axios.get(url).then(response => {
-                      setIdeas(response.data.ideas || []);
-                      setDepartments(response.data.departments || []);
+                    let refreshIdeasUrl = `/api/admin/ideas?limit=50&sortBy=createdAt&sortOrder=desc`;
+                    if (selectedStatus && selectedStatus !== 'all') refreshIdeasUrl += `&status=${selectedStatus}`;
+                    axios.get(refreshIdeasUrl).then(refreshResponse => {
+                      setIdeas(refreshResponse.data.ideas || []);
+                      setDepartments(refreshResponse.data.departments || []);
                       setIdeasLoading(false);
                     });
                   }}
@@ -571,7 +571,7 @@ const AdminIdeasDashboard = () => {
                             ) : (
                               <Listbox value={selectedIdea.assignedReviewer || ''} onChange={async val => {
                                 // Call backend to assign reviewer
-                                await axios.patch(`/api/ideas/${selectedIdea._id}/assign-reviewer`, { assignedReviewer: val });
+                                await axios.patch(`/api/admin/ideas/${selectedIdea._id}/assign-reviewer`, { assignedReviewer: val });
                                 setSelectedIdea(prev => ({ ...prev, assignedReviewer: val }));
                               }}>
                                 <div className="relative">

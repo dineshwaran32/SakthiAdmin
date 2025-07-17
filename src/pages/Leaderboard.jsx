@@ -30,7 +30,7 @@ const Leaderboard = () => {
         params.append('search', filters.search);
       }
 
-      const response = await axios.get(`/api/users?${params}`);
+      const response = await axios.get(`/api/admin/users?${params}`);
       setEmployees(response.data.users);
       setDepartments(response.data.departments);
     } catch (error) {
@@ -42,7 +42,7 @@ const Leaderboard = () => {
 
   const handleExport = async () => {
     try {
-      const response = await axios.get('/api/employees/export/excel', {
+      const response = await axios.get('/api/admin/employees/export/excel', {
         responseType: 'blob'
       });
       

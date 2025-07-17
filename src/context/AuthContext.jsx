@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
     const initAuth = async () => {
       if (token) {
         try {
-          const response = await axios.get('/api/auth/me');
+          const response = await axios.get('/api/admin/auth/me');
           setUser(response.data.user);
         } catch (error) {
           console.error('Auth check failed:', error);
@@ -47,7 +47,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (employeeNumber, password) => {
     try {
       console.log('Attempting login with:', { employeeNumber, password });
-      const response = await axios.post('/api/auth/login', { employeeNumber, password });
+      const response = await axios.post('/api/admin/auth/login', { employeeNumber, password });
       console.log('Login response:', response.data);
       const { token: newToken, user: userData } = response.data;
       

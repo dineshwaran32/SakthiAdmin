@@ -55,15 +55,15 @@ let isDbConnected = false;
 // Routes - only mount if database is connected
 const setupRoutes = () => {
   if (isDbConnected) {
-    app.use('/api/auth', authRoutes);
-    app.use('/api/employees', employeeRoutes);
-    app.use('/api/ideas', ideaRoutes);
-    app.use('/api/reviewers', reviewerRoutes);
-    app.use('/api/users', usersRoutes);
+    app.use('/api/admin/auth', authRoutes);
+    app.use('/api/admin/employees', employeeRoutes);
+    app.use('/api/admin/ideas', ideaRoutes);
+    app.use('/api/admin/reviewers', reviewerRoutes);
+    app.use('/api/admin/users', usersRoutes);
     console.log('✅ API routes mounted');
   } else {
     // Mock routes for development without database
-    app.get('/api/auth/me', (req, res) => {
+    app.get('/api/admin/auth/me', (req, res) => {
       res.json({
         user: {
           id: 'mock-user-id',
@@ -74,7 +74,7 @@ const setupRoutes = () => {
       });
     });
     
-    app.post('/api/auth/login', (req, res) => {
+    app.post('/api/admin/auth/login', (req, res) => {
       console.log('Login request received:', req.body);
       const { employeeNumber, password } = req.body;
       // For demo, allow only EMP001 and password 1234
@@ -96,7 +96,7 @@ const setupRoutes = () => {
     });
 
     // Mock other routes
-    app.get('/api/ideas', (req, res) => {
+    app.get('/api/admin/ideas', (req, res) => {
       res.json({
         ideas: [],
         total: 0,
@@ -108,7 +108,7 @@ const setupRoutes = () => {
       });
     });
 
-    app.get('/api/employees', (req, res) => {
+    app.get('/api/admin/employees', (req, res) => {
       res.json({
         employees: [],
         total: 0,
